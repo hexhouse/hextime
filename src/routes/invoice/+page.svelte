@@ -1,0 +1,283 @@
+<script>
+	import { supabase } from '$lib/supabase.js';
+	import { auth } from '$lib/auth.svelte.js';
+	import { rates, loadRates, groupByRate } from '$lib/rates.svelte.js';
+
+	let profile = $state(null);
+	let allEntries = $state([]);
+
+	let startDate = $state(defaultStart());
+	let endDate = $state(defaultEnd());
+	let invoiceNumber = $state('001');
+	let notes = $state('');
+	let showPreview = $state(false);
+	let manualRates = $state({});
+
+	function defaultStart() {
+		const d = new Date();
+		d.setDate(15);
+		d.setMonth(d.getMonth() - 1);
+		return d.toISOString().slice(0, 10);
+	}
+
+	function defaultEnd() {
+		const d = new Date();
+		d.setDate(15);
+		return d.toISOString().slice(0, 10);
+	}
+
+	$effect(() => {
+		if (auth.session?.user) {
+			loadRates();
+			supabase.from('profiles').select('*').eq('id', auth.session.user.id).single()
+				.then(({ data }) => { if (data) profile = data; });
+			supabase.from('time_entries').select('*')
+				.eq('user_id', auth.session.user.id)
+				.order('entry_date', { ascending: false })
+				.then(({ data }) => { if (data) allEntries = data; });
+		}
+	});
+
+	const filtered = $derived(
+		allEntries.filter(e => e.entry_date >= startDate && e.entry_date <= endDate)
+	);
+
+	const rateGroups = $derived(groupByRate(filtered));
+
+	function effectiveRate(g) {
+		if (g.rate != null) return g.rate;
+		const v = parseFloat(manualRates[g.rateKey]);
+		return isNaN(v) ? null : v;
+	}
+
+	const totalAmount = $derived(
+		rateGroups.reduce((sum, g) => {
+			const r = effectiveRate(g);
+			if (r == null) return sum;
+			return sum + (g.totalSeconds / 3600) * r;
+		}, 0).toFixed(2)
+	);
+
+	const hasUnratedEntries = $derived(rateGroups.some(g => effectiveRate(g) == null));
+
+	function fmtDuration(s) {
+		const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+		if (h > 0 && m > 0) return `${h}h ${m}m`;
+		if (h > 0) return `${h}h`;
+		return `${m}m`;
+	}
+
+	function fmtDate(d) {
+		const [y, mo, day] = d.split('-');
+		return `${mo}/${day}/${y}`;
+	}
+
+	function printInvoice() {
+		showPreview = true;
+		setTimeout(() => window.print(), 100);
+	}
+</script>
+
+<svelte:head>
+	<style>
+		@media print {
+			.no-print { display: none !important; }
+			body { background: white !important; color: black !important; }
+			.invoice-sheet { display: block !important; }
+		}
+	</style>
+</svelte:head>
+
+<!-- Setup UI -->
+<div class="no-print min-h-screen bg-black text-white" style="font-family: 'Diolce-Regular', sans-serif;">
+	<nav class="px-6 py-4 flex items-center justify-between" style="border-bottom: 1px dotted rgba(255,255,255,0.25);">
+		<span style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.1rem;">hex time</span>
+		<a href="/dashboard" class="text-xs" style="color: rgba(255,255,255,0.45); font-family: 'Courier', monospace;">← dashboard</a>
+	</nav>
+
+	<div class="max-w-lg mx-auto px-6 py-10 space-y-8">
+		<h2 style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.6rem;">generate invoice</h2>
+
+		<div class="flex gap-6 flex-wrap items-end">
+			<div>
+				<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">from</label>
+				<input type="date" bind:value={startDate} class="hex-input" style="width: 9rem; color-scheme: dark;" />
+			</div>
+			<div>
+				<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">to</label>
+				<input type="date" bind:value={endDate} class="hex-input" style="width: 9rem; color-scheme: dark;" />
+			</div>
+			<div>
+				<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">invoice #</label>
+				<input type="text" bind:value={invoiceNumber} class="hex-input" style="width: 5rem;" />
+			</div>
+		</div>
+
+		<div>
+			<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">notes (optional)</label>
+			<input type="text" bind:value={notes} class="hex-input" placeholder="anything to add..." />
+		</div>
+
+		<hr class="hex-divider" />
+
+		<!-- Rate preview per group -->
+		{#if filtered.length === 0}
+			<p style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.35);">no entries in this period</p>
+		{:else}
+			{#each rateGroups as g}
+				<div class="mb-4">
+					<div class="flex items-baseline justify-between mb-2 gap-4">
+						<span style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">{g.rateKey}</span>
+						{#if g.rate != null}
+							<span style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">
+								${g.rate}/hr · {fmtDuration(g.totalSeconds)} · <strong style="color: white;">${((g.totalSeconds / 3600) * g.rate).toFixed(2)}</strong>
+							</span>
+						{:else}
+							<div class="flex items-baseline gap-1">
+								<span style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.35);">rate: $</span>
+								<input
+									type="number"
+									bind:value={manualRates[g.rateKey]}
+									class="hex-input text-right"
+									style="width: 4.5rem; font-family: 'Courier', monospace; font-size: 1rem;"
+									placeholder="—"
+									min="0"
+									step="0.01"
+								/>
+								<span style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.35);">/hr</span>
+								{#if effectiveRate(g) != null}
+									<span style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4); margin-left: 0.5rem;">
+										· <strong style="color: white;">${((g.totalSeconds / 3600) * effectiveRate(g)).toFixed(2)}</strong>
+									</span>
+								{/if}
+							</div>
+						{/if}
+					</div>
+					{#each g.entries as entry}
+						<div class="flex justify-between py-1.5" style="border-bottom: 1px dotted rgba(255,255,255,0.1);">
+							<div>
+								<span style="font-family: 'Times New Roman', Georgia, serif;">{entry.description}</span>
+								<span class="ml-2" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.3);">{entry.project}</span>
+							</div>
+							<div class="flex gap-4" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.5);">
+								<span>{fmtDate(entry.date)}</span>
+								<span>{fmtDuration(entry.duration)}</span>
+							</div>
+						</div>
+					{/each}
+				</div>
+			{/each}
+
+			{#if !hasUnratedEntries}
+				<p style="font-family: 'Courier', monospace; font-size: 1rem;">
+					total: <strong>${totalAmount}</strong>
+				</p>
+			{/if}
+
+			<button class="btn-silver mt-4" onclick={printInvoice} disabled={hasUnratedEntries}>
+				print / save as PDF
+			</button>
+			{#if hasUnratedEntries}
+				<p class="mt-2" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.35);">enter a rate above to continue</p>
+			{/if}
+		{/if}
+	</div>
+</div>
+
+<!-- Print-only invoice -->
+<div class="invoice-sheet" style="display: {showPreview ? 'block' : 'none'}; max-width: 680px; margin: 0 auto; padding: 3rem; font-family: 'Courier', monospace; color: black; background: white;">
+
+	<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3rem;">
+		<div>
+			<div style="font-family: 'Skanaus-Display', sans-serif; font-size: 2rem;">invoice</div>
+			<div style="font-size: 1rem; color: #666; margin-top: 0.2rem;">Hex House</div>
+		</div>
+		<div style="text-align: right; font-size: 1rem;">
+			<div>#{invoiceNumber}</div>
+			<div style="color: #666;">{fmtDate(endDate)}</div>
+		</div>
+	</div>
+
+	<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2.5rem; font-size: 1rem;">
+		<div>
+			<div style="font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: #999; margin-bottom: 0.4rem;">from</div>
+			<div style="font-weight: bold;">{profile?.business_name || profile?.name}</div>
+			{#if profile?.business_name}<div>{profile.name}</div>{/if}
+			<div>{profile?.address}</div>
+			<div>{profile?.city_state_zip}</div>
+			<div>{profile?.invoice_email}</div>
+			{#if profile?.tax_id}<div style="color: #666; margin-top: 0.3rem;">EIN: {profile.tax_id}</div>{/if}
+		</div>
+		<div>
+			<div style="font-size: 1rem; text-transform: uppercase; letter-spacing: 0.1em; color: #999; margin-bottom: 0.4rem;">to</div>
+			<div style="font-weight: bold;">Hex House</div>
+			<div>Brooklyn, NY</div>
+		</div>
+	</div>
+
+	<div style="font-size: 1rem; color: #999; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem;">
+		{fmtDate(startDate)} — {fmtDate(endDate)}
+	</div>
+
+	<!-- One table per rate group -->
+	{#each rateGroups as g, i}
+		{#if i > 0}<div style="margin-top: 1.5rem;"></div>{/if}
+
+		{#if rateGroups.length > 1}
+			<div style="font-size: 1rem; color: #999; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.4rem;">
+				{g.rateKey} · ${effectiveRate(g)}/hr
+			</div>
+		{/if}
+
+		<table style="width: 100%; border-collapse: collapse; font-size: 1rem; margin-bottom: 0.5rem;">
+			<thead>
+				<tr style="border-bottom: 1px solid black;">
+					<th style="text-align: left; padding: 0.4rem 0; font-weight: normal; color: #888;">description</th>
+					<th style="text-align: left; padding: 0.4rem 0; font-weight: normal; color: #888;">project</th>
+					<th style="text-align: left; padding: 0.4rem 0; font-weight: normal; color: #888;">date</th>
+					<th style="text-align: right; padding: 0.4rem 0; font-weight: normal; color: #888;">time</th>
+				</tr>
+			</thead>
+			<tbody>
+				{#each g.entries as entry}
+					<tr style="border-bottom: 1px dotted #ddd;">
+						<td style="padding: 0.4rem 0;">{entry.description}</td>
+						<td style="padding: 0.4rem 0; color: #666;">{entry.project}</td>
+						<td style="padding: 0.4rem 0;">{fmtDate(entry.date)}</td>
+						<td style="padding: 0.4rem 0; text-align: right;">{fmtDuration(entry.duration)}</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+
+		{#if rateGroups.length > 1}
+			{@const r = effectiveRate(g)}
+			<div style="text-align: right; font-size: 1rem; color: #666; margin-bottom: 0.5rem;">
+				subtotal: {fmtDuration(g.totalSeconds)} × ${r}/hr = ${((g.totalSeconds / 3600) * r).toFixed(2)}
+			</div>
+		{/if}
+	{/each}
+
+	<!-- Total -->
+	<div style="display: flex; justify-content: flex-end; margin-top: 1.5rem; margin-bottom: 2rem;">
+		<table style="font-size: 1rem;">
+			<tbody>
+				<tr style="border-top: 1px solid black;">
+					<td style="padding: 0.5rem 1.5rem 0 0; font-weight: bold;">total due</td>
+					<td style="font-weight: bold; font-size: 1.1rem;">${totalAmount}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	{#if notes}
+		<div style="font-size: 1rem; color: #666; margin-bottom: 1.5rem;">
+			<span style="color: #999; text-transform: uppercase; font-size: 1rem; letter-spacing: 0.08em;">notes: </span>{notes}
+		</div>
+	{/if}
+
+	<div style="font-size: 1rem; color: #666; border-top: 1px dotted #ccc; padding-top: 0.75rem;">
+		<span style="color: #999; text-transform: uppercase; font-size: 1rem; letter-spacing: 0.08em;">payment: </span>
+		{profile?.payment_method} — {profile?.payment_details}
+	</div>
+</div>

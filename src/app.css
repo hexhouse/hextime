@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+@font-face {
+	font-family: 'Skanaus-Display';
+	src: url('/assets/Skanaus-Display.otf') format('opentype');
+}
+
+@font-face {
+	font-family: 'Diolce-Regular';
+	src: url('/assets/Diolce-Regular.otf') format('opentype');
+}
+
+@theme {
+	--font-display: 'Skanaus-Display', sans-serif;
+	--font-body: 'Diolce-Regular', sans-serif;
+	--font-mono: 'Courier', monospace;
+}
+
+html, body {
+	background-color: black;
+	color: white;
+	font-family: 'Diolce-Regular', sans-serif;
+}
+
+h1, h2 {
+	font-family: 'Skanaus-Display', sans-serif;
+}
+
+/* Hex-style inputs */
+.hex-input {
+	width: 100%;
+	background: transparent;
+	border: none;
+	border-bottom: 1px dotted white;
+	outline: none;
+	color: white;
+	font-family: 'Courier', monospace;
+	font-size: 1rem;
+	padding: 0.3em 0;
+}
+
+.hex-input::placeholder {
+	color: rgba(255, 255, 255, 0.4);
+	font-family: 'Courier', monospace;
+}
+
+.hex-input:disabled {
+	opacity: 0.4;
+}
+
+/* Retro silver button */
+.btn-silver {
+	background: #c0c0c0;
+	color: black;
+	border: 2px outset #c0c0c0;
+	border-radius: 2px;
+	padding: 0.15em 0.8em;
+	font-family: 'Times New Roman', Times, serif;
+	font-weight: bold;
+	font-size: 1rem;
+	cursor: pointer;
+	box-shadow: inset 1px 1px 0px #ffffff, inset -1px -1px 0px #808080;
+}
+
+.btn-silver:hover { background: #d0d0d0; }
+
+.btn-silver:active {
+	border: 2px inset #c0c0c0;
+	box-shadow: inset 1px 1px 0px #808080, inset -1px -1px 0px #ffffff;
+}
+
+/* Ghost / outline button */
+.btn-ghost {
+	background: transparent;
+	color: white;
+	border: 1px dotted rgba(255,255,255,0.5);
+	padding: 0.2em 0.8em;
+	font-family: 'Diolce-Regular', sans-serif;
+	font-size: 1rem;
+	cursor: pointer;
+}
+
+.btn-ghost:hover {
+	border-color: white;
+}
+
+/* Small Courier meta/label text used throughout */
+.hex-meta {
+	font-family: 'Courier', monospace;
+	font-size: 1rem;
+}
+
+/* Dotted divider */
+.hex-divider {
+	border: none;
+	border-top: 1px dotted rgba(255,255,255,0.3);
+}
+
+/* Select styled like hex input */
+.hex-select {
+	background: transparent;
+	border: none;
+	border-bottom: 1px dotted white;
+	color: white;
+	font-family: 'Courier', monospace;
+	font-size: 1rem;
+	padding: 0.3em 0;
+	outline: none;
+	cursor: pointer;
+}
+
+.hex-select option {
+	background: black;
+	color: white;
+}
