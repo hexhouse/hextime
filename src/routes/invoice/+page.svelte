@@ -1,4 +1,5 @@
 <script>
+	import { onMount } from 'svelte';
 	import { supabase } from '$lib/supabase.js';
 	import { auth } from '$lib/auth.svelte.js';
 	import { rates, loadRates, groupByRate } from '$lib/rates.svelte.js';
@@ -26,16 +27,15 @@
 		return d.toISOString().slice(0, 10);
 	}
 
-	$effect(() => {
-		if (auth.session?.user) {
-			loadRates();
-			supabase.from('profiles').select('*').eq('id', auth.session.user.id).single()
-				.then(({ data }) => { if (data) profile = data; });
-			supabase.from('time_entries').select('*')
-				.eq('user_id', auth.session.user.id)
-				.order('entry_date', { ascending: false })
-				.then(({ data }) => { if (data) allEntries = data; });
-		}
+	onMount(async () => {
+		if (!auth.session?.user) return;
+		loadRates();
+		const [{ data: p }, { data: e }] = await Promise.all([
+			supabase.from('profiles').select('*').eq('id', auth.session.user.id).single(),
+			supabase.from('time_entries').select('*').eq('user_id', auth.session.user.id).order('entry_date', { ascending: false }),
+		]);
+		if (p) profile = p;
+		if (e) allEntries = e;
 	});
 
 	const filtered = $derived(
@@ -160,8 +160,8 @@
 								<span class="ml-2" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.3);">{entry.project}</span>
 							</div>
 							<div class="flex gap-4" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.5);">
-								<span>{fmtDate(entry.date)}</span>
-								<span>{fmtDuration(entry.duration)}</span>
+								<span>{fmtDate(entry.entry_date)}</span>
+								<span>{fmtDuration(entry.duration_seconds)}</span>
 							</div>
 						</div>
 					{/each}
@@ -243,8 +243,8 @@
 					<tr style="border-bottom: 1px dotted #ddd;">
 						<td style="padding: 0.4rem 0;">{entry.description}</td>
 						<td style="padding: 0.4rem 0; color: #666;">{entry.project}</td>
-						<td style="padding: 0.4rem 0;">{fmtDate(entry.date)}</td>
-						<td style="padding: 0.4rem 0; text-align: right;">{fmtDuration(entry.duration)}</td>
+						<td style="padding: 0.4rem 0;">{fmtDate(entry.entry_date)}</td>
+						<td style="padding: 0.4rem 0; text-align: right;">{fmtDuration(entry.duration_seconds)}</td>
 					</tr>
 				{/each}
 			</tbody>

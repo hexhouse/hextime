@@ -1,4 +1,5 @@
 <script>
+	import { onMount } from 'svelte';
 	import { supabase } from '$lib/supabase.js';
 	import { auth } from '$lib/auth.svelte.js';
 	import { goto } from '$app/navigation';
@@ -15,11 +16,19 @@
 	let error = $state('');
 	let submitting = $state(false);
 
-	// Pre-fill name and email from auth
-	$effect(() => {
-		if (auth.session?.user) {
-			name = auth.session.user.user_metadata?.name ?? '';
-			invoiceEmail = auth.session.user.email ?? '';
+	onMount(async () => {
+		if (!auth.session?.user) return;
+		const { data } = await supabase.from('profiles').select('*').eq('id', auth.session.user.id).single();
+		if (data) {
+			name = data.name ?? auth.session.user.user_metadata?.name ?? '';
+			businessName = data.business_name ?? '';
+			address = data.address ?? '';
+			cityStateZip = data.city_state_zip ?? '';
+			invoiceEmail = data.invoice_email ?? auth.session.user.email ?? '';
+			phone = data.phone ?? '';
+			taxId = data.tax_id ?? '';
+			paymentMethod = data.payment_method ?? 'Gusto';
+			paymentDetails = data.payment_details ?? '';
 		}
 	});
 
