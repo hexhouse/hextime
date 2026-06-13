@@ -24,7 +24,7 @@
 	}
 </script>
 
-<div class="min-h-screen bg-[#111111] flex items-center justify-center px-4">
+<div class="min-h-screen bg-[#0d0d0d] flex items-center justify-center px-4">
 	<div class="w-full max-w-xs">
 
 		<h1 class="text-3xl mb-1 text-center" style="font-family: 'Skanaus-Display', sans-serif;">create account</h1>

@@ -53,7 +53,7 @@
 	}
 </script>
 
-<div class="min-h-screen bg-[#111111] px-6 py-12">
+<div class="min-h-screen bg-[#0d0d0d] px-6 py-12">
 	<div class="max-w-md mx-auto">
 
 		<h1 class="text-3xl mb-1" style="font-family: 'Skanaus-Display', sans-serif;">invoice setup</h1>

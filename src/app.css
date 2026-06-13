@@ -17,7 +17,7 @@
 }
 
 :root {
-	--bg: #111111;
+	--bg: #0d0d0d;
 }
 
 html, body {
@@ -114,6 +114,6 @@ h1, h2 {
 }
 
 .hex-select option {
-	background: #111111;
+	background: #0d0d0d;
 	color: white;
 }
