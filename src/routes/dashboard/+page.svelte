@@ -112,7 +112,9 @@
 	// Bulk import
 	let showImport = $state(false);
 	let importText = $state('');
-	let importProject = $state('Organizational Stewardship');
+	let importStage = $state('paste'); // 'paste' | 'categorize'
+	let stagedEntries = $state([]);
+	let batchProject = $state('');
 	let importing = $state(false);
 	let importDone = $state(null);
 
@@ -148,14 +150,31 @@
 		return { results, skipped };
 	});
 
-	async function runImport() {
+	function guessProject(desc) {
+		const d = desc.toLowerCase();
+		if (/meeting|mtg|sync|standup/.test(d)) return 'Maintainer Meeting';
+		if (/finance|payment|invoice|stripe|gusto|bank|account|budget|expense/.test(d)) return 'Finance';
+		if (/member|membership|contract|onboard/.test(d)) return 'Membership';
+		if (/event|party|fundrais|shiv|nye|celebrat|gather/.test(d)) return 'Events';
+		if (/clean|bathroom|kitchen|trash|facilit|infra|fix|repair|build|install|plumb|electric/.test(d)) return 'Space/Facilities/Infra';
+		if (/newsletter|instagram|social|post|promo|messag|website|flyer|announc|photo|video/.test(d)) return 'Public Messaging';
+		if (/residency|resident/.test(d)) return 'Residency';
+		return 'Organizational Stewardship';
+	}
+
+	function stageForCategorization() {
 		const { results } = parsedImport();
-		if (!results.length) return;
+		stagedEntries = results.map(e => ({ ...e, project: guessProject(e.description) }));
+		importStage = 'categorize';
+	}
+
+	async function runImport() {
+		if (!stagedEntries.length) return;
 		importing = true;
-		const rows = results.map(e => ({
+		const rows = stagedEntries.map(e => ({
 			user_id: auth.session.user.id,
 			description: e.description,
-			project: importProject,
+			project: e.project,
 			duration_seconds: e.duration_seconds,
 			entry_date: e.entry_date,
 		}));
@@ -164,6 +183,8 @@
 		if (!error) {
 			importDone = rows.length;
 			importText = '';
+			stagedEntries = [];
+			importStage = 'paste';
 			await loadEntries();
 		}
 	}
@@ -272,56 +293,91 @@
 		<!-- Bulk import -->
 		<div class="mb-6">
 			<button
-				onclick={() => { showImport = !showImport; importDone = null; }}
+				onclick={() => { showImport = !showImport; importDone = null; if (!showImport) { importStage = 'paste'; stagedEntries = []; } }}
 				style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.25); background: none; border: none; cursor: pointer; padding: 0;"
 			>{showImport ? '▲ close import' : '↓ import from notes'}</button>
 
 			{#if showImport}
 				<div class="mt-4 space-y-4">
-					<textarea
-						bind:value={importText}
-						rows="10"
-						class="hex-input"
-						style="width: 100%; font-family: 'Courier', monospace; font-size: 0.82rem; resize: vertical; background: rgba(255,255,255,0.03); padding: 0.5rem;"
-						placeholder="paste your notes here — entries like '- did the thing 1.5' will be detected"
-					></textarea>
 
-					<div class="flex gap-4 items-end flex-wrap">
-						<div>
-							<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.4);">project for all</label>
-							<select bind:value={importProject} class="hex-select" style="font-size: 0.82rem;">
+					{#if importStage === 'paste'}
+						<textarea
+							bind:value={importText}
+							rows="10"
+							class="hex-input"
+							style="width: 100%; font-family: 'Courier', monospace; font-size: 0.82rem; resize: vertical; background: rgba(255,255,255,0.03); padding: 0.5rem;"
+							placeholder="paste your notes here — entries like '- did the thing 1.5' will be detected"
+						></textarea>
+
+						{#if parsedImport().results.length > 0}
+							<div class="flex items-center gap-4">
+								<p style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.35);">
+									{parsedImport().results.length} entries detected
+								</p>
+								<button class="btn-silver" onclick={stageForCategorization} style="font-size: 0.82rem;">
+									categorize →
+								</button>
+							</div>
+						{/if}
+
+						{#if parsedImport().skipped.length > 0}
+							<div>
+								<p style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,150,100,0.6); margin-bottom: 0.3rem;">
+									{parsedImport().skipped.length} lines skipped (no hours found):
+								</p>
+								{#each parsedImport().skipped as s}
+									<div style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,150,100,0.4); padding: 0.1rem 0;">— {s}</div>
+								{/each}
+							</div>
+						{/if}
+
+					{:else}
+						<!-- Categorization step -->
+						<div class="flex items-center justify-between">
+							<button
+								onclick={() => importStage = 'paste'}
+								style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3); background: none; border: none; cursor: pointer; padding: 0;"
+							>← back</button>
+							<p style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.35);">
+								{stagedEntries.length} entries — assign project to each
+							</p>
+						</div>
+
+						<!-- Batch set -->
+						<div class="flex items-center gap-2">
+							<label style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3); white-space: nowrap;">set all to:</label>
+							<select
+								bind:value={batchProject}
+								onchange={() => { if (batchProject) { stagedEntries = stagedEntries.map(e => ({ ...e, project: batchProject })); batchProject = ''; } }}
+								class="hex-select"
+								style="font-size: 0.82rem;"
+							>
+								<option value="">—</option>
 								{#each projects as p}<option value={p}>{p}</option>{/each}
 							</select>
 						</div>
-						<div>
-							<p style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.35);">
-								{parsedImport().results.length} entries detected
-							</p>
-						</div>
-					</div>
 
-					{#if parsedImport().results.length > 0}
-						<div class="space-y-1" style="max-height: 160px; overflow-y: auto;">
-							{#each parsedImport().results as e}
-								<div style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.4); border-bottom: 1px dotted rgba(255,255,255,0.08); padding: 0.2rem 0;">
-									{e.entry_date} · {fmtDuration(e.duration_seconds)} · {e.description}
+						<!-- Per-entry rows -->
+						<div style="max-height: 55vh; overflow-y: auto; border: 1px dotted rgba(255,255,255,0.1); padding: 0.25rem 0.5rem;">
+							{#each stagedEntries as entry, i}
+								<div style="display: grid; grid-template-columns: 4rem 3.5rem 1fr auto; gap: 0.5rem; align-items: center; padding: 0.3rem 0; border-bottom: 1px dotted rgba(255,255,255,0.07);">
+									<span style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.25);">{entry.entry_date.slice(5, 7)}/{entry.entry_date.slice(8)}</span>
+									<span style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.4);">{fmtDuration(entry.duration_seconds)}</span>
+									<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 0.9rem; color: rgba(255,255,255,0.75); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title={entry.description}>{entry.description}</span>
+									<select
+										bind:value={stagedEntries[i].project}
+										class="hex-select"
+										style="font-size: 0.75rem; min-width: 0; max-width: 180px;"
+									>
+										{#each projects as p}<option value={p}>{p}</option>{/each}
+									</select>
 								</div>
 							{/each}
 						</div>
-						<button class="btn-silver" onclick={runImport} disabled={importing}>
-							{importing ? '...' : `import ${parsedImport().results.length} entries`}
-						</button>
-					{/if}
 
-					{#if parsedImport().skipped.length > 0}
-						<div class="mt-3">
-							<p style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,150,100,0.6); margin-bottom: 0.3rem;">
-								{parsedImport().skipped.length} lines skipped (no hours found):
-							</p>
-							{#each parsedImport().skipped as s}
-								<div style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,150,100,0.4); padding: 0.1rem 0;">— {s}</div>
-							{/each}
-						</div>
+						<button class="btn-silver" onclick={runImport} disabled={importing}>
+							{importing ? '...' : `import ${stagedEntries.length} entries`}
+						</button>
 					{/if}
 
 					{#if importDone != null}
