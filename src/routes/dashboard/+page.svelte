@@ -24,6 +24,13 @@
 
 	const projects = ['Space/Facilities/Infrastructure', 'Membership', 'Public Messaging', 'Events', 'Maintainer Meeting', 'Finance', 'Organizational Stewardship', 'Residency'];
 
+	const importPlaceholder = `If you prefer, paste your notes here — one entry per line, with the time at the end:
+
+- toured Juniper .5
+- onboarded Juniper 1
+- updated events payment sheet .3
+- toured a potential wedding 1`;
+
 	function today() {
 		return new Date().toISOString().slice(0, 10);
 	}
@@ -417,7 +424,7 @@
 							rows="10"
 							class="hex-input"
 							style="width: 100%; font-family: 'Courier', monospace; font-size: 0.82rem; resize: vertical; background: rgba(255,255,255,0.03); padding: 0.5rem;"
-							placeholder="paste your notes here, one entry per line, with the time at the end:&#10;&#10;- toured Juniper .5&#10;- onboarded Juniper 1&#10;- updated events payment sheet .3&#10;- toured a potential wedding 1"
+							placeholder={importPlaceholder}
 						></textarea>
 
 						{#if parsedImport().results.length > 0}
