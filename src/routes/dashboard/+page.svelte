@@ -103,6 +103,62 @@
 		}
 		return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
 	});
+
+	// Bulk import
+	let showImport = $state(false);
+	let importText = $state('');
+	let importProject = $state('Organizational Stewardship');
+	let importing = $state(false);
+	let importDone = $state(null);
+
+	const monthMap = {
+		january: '01', february: '02', march: '03', april: '04',
+		may: '05', june: '06', july: '07', august: '08',
+		september: '09', october: '10', november: '11', december: '12'
+	};
+
+	const parsedImport = $derived(() => {
+		const year = new Date().getFullYear();
+		let currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
+		const results = [];
+		for (const raw of importText.split('\n')) {
+			const line = raw.trim();
+			const monthKey = line.toLowerCase().replace(/[^a-z]/g, '');
+			if (monthMap[monthKey]) { currentMonth = monthMap[monthKey]; continue; }
+			if (!line.startsWith('-')) continue;
+			const content = line.slice(1).trim();
+			const match = content.match(/^(.+?)\s+([\d.]+)\s*$/);
+			if (!match) continue;
+			const desc = match[1].trim();
+			const hrs = parseFloat(match[2]);
+			if (!desc || isNaN(hrs) || hrs <= 0) continue;
+			results.push({
+				description: desc,
+				duration_seconds: Math.round(hrs * 3600),
+				entry_date: `${year}-${currentMonth}-01`,
+			});
+		}
+		return results;
+	});
+
+	async function runImport() {
+		if (!parsedImport().length) return;
+		importing = true;
+		const rows = parsedImport().map(e => ({
+			user_id: auth.session.user.id,
+			description: e.description,
+			project: importProject,
+			duration_seconds: e.duration_seconds,
+			entry_date: e.entry_date,
+		}));
+		const { error } = await supabase.from('time_entries').insert(rows);
+		importing = false;
+		if (!error) {
+			importDone = rows.length;
+			importText = '';
+			await loadEntries();
+		}
+	}
 </script>
 
 <div class="min-h-screen bg-black text-white">
@@ -193,6 +249,57 @@
 				</div>
 			{/if}
 		</section>
+
+		<!-- Bulk import -->
+		<div class="mb-6">
+			<button
+				onclick={() => { showImport = !showImport; importDone = null; }}
+				style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.25); background: none; border: none; cursor: pointer; padding: 0;"
+			>{showImport ? '▲ close import' : '↓ import from notes'}</button>
+
+			{#if showImport}
+				<div class="mt-4 space-y-4">
+					<textarea
+						bind:value={importText}
+						rows="10"
+						class="hex-input"
+						style="width: 100%; font-family: 'Courier', monospace; font-size: 0.82rem; resize: vertical; background: rgba(255,255,255,0.03); padding: 0.5rem;"
+						placeholder="paste your notes here — entries like '- did the thing 1.5' will be detected"
+					></textarea>
+
+					<div class="flex gap-4 items-end flex-wrap">
+						<div>
+							<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.4);">project for all</label>
+							<select bind:value={importProject} class="hex-select" style="font-size: 0.82rem;">
+								{#each projects as p}<option value={p}>{p}</option>{/each}
+							</select>
+						</div>
+						<div>
+							<p style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.35);">
+								{parsedImport().length} entries detected
+							</p>
+						</div>
+					</div>
+
+					{#if parsedImport().length > 0}
+						<div class="space-y-1" style="max-height: 160px; overflow-y: auto;">
+							{#each parsedImport() as e}
+								<div style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.4); border-bottom: 1px dotted rgba(255,255,255,0.08); padding: 0.2rem 0;">
+									{e.entry_date} · {fmtDuration(e.duration_seconds)} · {e.description}
+								</div>
+							{/each}
+						</div>
+						<button class="btn-silver" onclick={runImport} disabled={importing}>
+							{importing ? '...' : `import ${parsedImport().length} entries`}
+						</button>
+					{/if}
+
+					{#if importDone != null}
+						<p style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.5);">✓ imported {importDone} entries</p>
+					{/if}
+				</div>
+			{/if}
+		</div>
 
 		<div class="flex items-center gap-3 mb-8">
 			<hr class="flex-1 hex-divider" />
