@@ -65,7 +65,7 @@
 		const cutoff = new Date();
 		cutoff.setFullYear(cutoff.getFullYear() - 1);
 		const [{ data: pData }, { data: eData }] = await Promise.all([
-			supabase.from('profiles').select('id, name, role'),
+			supabase.from('profiles').select('id, name, role, monthly_hours_cap'),
 			supabase.from('time_entries').select('*').gte('entry_date', cutoff.toISOString().slice(0, 10)),
 		]);
 		if (pData) profiles = pData;
@@ -74,6 +74,13 @@
 	}
 
 	loadData();
+
+	async function saveCap(userId, val) {
+		const cap = val === '' || val == null ? null : parseFloat(val);
+		await supabase.from('profiles').update({ monthly_hours_cap: cap }).eq('id', userId);
+		const p = profiles.find(p => p.id === userId);
+		if (p) p.monthly_hours_cap = cap;
+	}
 </script>
 
 <div class="min-h-screen bg-[#0d0d0d] text-white" style="font-family: 'Diolce-Regular', sans-serif;">
@@ -122,6 +129,33 @@
 								step="0.01"
 							/>
 							<span style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.3);">/hr</span>
+						</div>
+					</div>
+				{/each}
+			</div>
+		</section>
+
+		<hr class="hex-divider" />
+
+		<section>
+			<h2 style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.6rem; margin-bottom: 0.25rem;">monthly caps</h2>
+			<p class="mb-6" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.35);">max compensated hours per billing period, per contractor</p>
+			<div>
+				{#each profiles.filter(p => p.role === 'contractor' || p.role === 'admin') as p}
+					<div class="flex items-center justify-between py-3" style="border-bottom: 1px dotted rgba(255,255,255,0.12);">
+						<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem;">{p.name ?? '—'}</span>
+						<div class="flex items-baseline gap-1">
+							<input
+								type="number"
+								value={p.monthly_hours_cap ?? ''}
+								onchange={(e) => saveCap(p.id, e.target.value)}
+								class="hex-input text-right"
+								style="width: 4rem; font-family: 'Courier', monospace;"
+								placeholder="—"
+								min="0"
+								step="0.5"
+							/>
+							<span style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.3);">h/mo</span>
 						</div>
 					</div>
 				{/each}

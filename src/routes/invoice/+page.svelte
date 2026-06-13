@@ -49,10 +49,35 @@
 	});
 
 	const filtered = $derived(
-		allEntries.filter(e => e.entry_date >= startDate && e.entry_date <= endDate)
+		allEntries
+			.filter(e => e.entry_date >= startDate && e.entry_date <= endDate)
+			.sort((a, b) => a.entry_date.localeCompare(b.entry_date))
 	);
 
-	const rateGroups = $derived(groupByRate(filtered));
+	function splitByCap(entries, capHours) {
+		if (capHours == null) return { comp: entries, over: [] };
+		const capSecs = capHours * 3600;
+		let acc = 0;
+		const comp = [], over = [];
+		for (const e of entries) {
+			if (acc >= capSecs) {
+				over.push(e);
+			} else if (acc + e.duration_seconds <= capSecs) {
+				comp.push(e); acc += e.duration_seconds;
+			} else {
+				const compSecs = capSecs - acc;
+				comp.push({ ...e, duration_seconds: compSecs, _partial: true });
+				over.push({ ...e, duration_seconds: e.duration_seconds - compSecs, _partial: true });
+				acc = capSecs;
+			}
+		}
+		return { comp, over };
+	}
+
+	const capHours = $derived(profile?.monthly_hours_cap ?? null);
+	const { comp: compEntries, over: overEntries } = $derived(splitByCap(filtered, capHours));
+
+	const rateGroups = $derived(groupByRate(compEntries));
 
 	function effectiveRate(g) {
 		if (g.rate != null) return g.rate;
@@ -69,6 +94,7 @@
 	);
 
 	const hasUnratedEntries = $derived(rateGroups.some(g => effectiveRate(g) == null));
+	const overSeconds = $derived(overEntries.reduce((s, e) => s + e.duration_seconds, 0));
 
 	function fmtDuration(s) {
 		const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
@@ -131,7 +157,17 @@
 
 		<hr class="hex-divider" />
 
-		<!-- Rate preview per group -->
+		<!-- Cap info -->
+		{#if capHours != null}
+			<p style="font-family: 'Courier', monospace; font-size: 0.9rem; color: rgba(255,255,255,0.35); margin-bottom: 1rem;">
+				monthly cap: {capHours}h
+				{#if overEntries.length > 0}
+					<span style="color: #f4a261;"> · {fmtDuration(overSeconds)} over cap</span>
+				{/if}
+			</p>
+		{/if}
+
+		<!-- Rate preview per group (compensated entries only) -->
 		{#if filtered.length === 0}
 			<p style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.35);">no entries in this period</p>
 		{:else}
@@ -167,7 +203,7 @@
 					{#each g.entries as entry}
 						<div class="flex justify-between py-1.5" style="border-bottom: 1px dotted rgba(255,255,255,0.1);">
 							<div>
-								<span style="font-family: 'Times New Roman', Georgia, serif;">{entry.description}</span>
+								<span style="font-family: 'Times New Roman', Georgia, serif;">{entry.description}{#if entry._partial} <span style="color:rgba(255,255,255,0.3);">(partial)</span>{/if}</span>
 								<span class="ml-2" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.3);">{entry.project}</span>
 							</div>
 							<div class="flex gap-4" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.5);">
@@ -183,6 +219,27 @@
 				<p style="font-family: 'Courier', monospace; font-size: 1rem;">
 					total: <strong>${totalAmount}</strong>
 				</p>
+			{/if}
+
+			<!-- Over-cap entries -->
+			{#if overEntries.length > 0}
+				<div class="mt-6" style="border-top: 1px dotted rgba(255,255,255,0.15); padding-top: 1.25rem;">
+					<p style="font-family: 'Courier', monospace; font-size: 0.9rem; color: rgba(255,255,255,0.35); margin-bottom: 0.75rem;">
+						donated / uncompensated · {fmtDuration(overSeconds)}
+					</p>
+					{#each overEntries as entry}
+						<div class="flex justify-between py-1.5" style="border-bottom: 1px dotted rgba(255,255,255,0.07);">
+							<div>
+								<span style="font-family: 'Times New Roman', Georgia, serif; color: rgba(255,255,255,0.45);">{entry.description}{#if entry._partial} <span style="color:rgba(255,255,255,0.25);">(partial)</span>{/if}</span>
+								<span class="ml-2" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.2);">{entry.project}</span>
+							</div>
+							<div class="flex gap-4" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.3);">
+								<span>{fmtDate(entry.entry_date)}</span>
+								<span>{fmtDuration(entry.duration_seconds)}</span>
+							</div>
+						</div>
+					{/each}
+				</div>
 			{/if}
 
 			<button class="btn-silver mt-4" onclick={printInvoice} disabled={hasUnratedEntries}>
@@ -282,6 +339,35 @@
 			</tbody>
 		</table>
 	</div>
+
+	<!-- Donated / uncompensated section -->
+	{#if overEntries.length > 0}
+		<div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px dotted #ccc;">
+			<div style="font-size: 1rem; text-transform: uppercase; letter-spacing: 0.08em; color: #aaa; margin-bottom: 0.5rem;">
+				donated / uncompensated · {fmtDuration(overSeconds)}
+			</div>
+			<table style="width: 100%; border-collapse: collapse; font-size: 1rem; color: #aaa;">
+				<thead>
+					<tr style="border-bottom: 1px dotted #ccc;">
+						<th style="text-align: left; padding: 0.4rem 0; font-weight: normal;">description</th>
+						<th style="text-align: left; padding: 0.4rem 0; font-weight: normal;">project</th>
+						<th style="text-align: left; padding: 0.4rem 0; font-weight: normal;">date</th>
+						<th style="text-align: right; padding: 0.4rem 0; font-weight: normal;">time</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each overEntries as entry}
+						<tr style="border-bottom: 1px dotted #eee;">
+							<td style="padding: 0.4rem 0;">{entry.description}{#if entry._partial} (partial){/if}</td>
+							<td style="padding: 0.4rem 0;">{entry.project}</td>
+							<td style="padding: 0.4rem 0;">{fmtDate(entry.entry_date)}</td>
+							<td style="padding: 0.4rem 0; text-align: right;">{fmtDuration(entry.duration_seconds)}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</div>
+	{/if}
 
 	{#if notes}
 		<div style="font-size: 1rem; color: #666; margin-bottom: 1.5rem;">

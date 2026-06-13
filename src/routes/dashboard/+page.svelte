@@ -2,6 +2,7 @@
 	import { supabase } from '$lib/supabase.js';
 	import { auth } from '$lib/auth.svelte.js';
 	import { goto } from '$app/navigation';
+	import { rates, loadRates, getRateKey } from '$lib/rates.svelte.js';
 
 	let mode = $state('manual');
 	let running = $state(false);
@@ -18,6 +19,7 @@
 	let entryDate = $state(today());
 
 	let entries = $state([]);
+	let userProfile = $state(null);
 
 	const projects = ['Space/Facilities/Infra', 'Membership', 'Public Messaging', 'Events', 'Maintainer Meeting', 'Finance', 'Organizational Stewardship', 'Residency'];
 
@@ -53,7 +55,12 @@
 	}
 
 	$effect(() => {
-		if (auth.session?.user) loadEntries();
+		if (auth.session?.user) {
+			loadEntries();
+			loadRates();
+			supabase.from('profiles').select('monthly_hours_cap').eq('id', auth.session.user.id).single()
+				.then(({ data }) => { if (data) userProfile = data; });
+		}
 	});
 
 	function toggleTimer() {
@@ -136,6 +143,34 @@
 	const todayTotal = $derived(
 		entries.filter(e => e.entry_date === today()).reduce((s, e) => s + e.duration_seconds, 0) + (running ? elapsed : 0)
 	);
+
+	function currentBillingPeriod() {
+		const now = new Date();
+		let sm = now.getDate() >= 15 ? now.getMonth() : now.getMonth() - 1;
+		let sy = now.getFullYear();
+		if (sm < 0) { sm = 11; sy--; }
+		let em = sm + 1, ey = sy;
+		if (em > 11) { em = 0; ey++; }
+		const start = `${sy}-${String(sm + 1).padStart(2,'0')}-15`;
+		const end = `${ey}-${String(em + 1).padStart(2,'0')}-14`;
+		const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+		const label = `${months[sm]} 15 – ${months[em]} 14`;
+		return { start, end, label };
+	}
+
+	const billingPeriod = currentBillingPeriod();
+
+	const periodSummary = $derived(() => {
+		const periodEntries = entries.filter(e => e.entry_date >= billingPeriod.start && e.entry_date <= billingPeriod.end);
+		const totalSecs = periodEntries.reduce((s, e) => s + e.duration_seconds, 0) + (running ? elapsed : 0);
+		const capHours = userProfile?.monthly_hours_cap ?? null;
+		const capSecs = capHours != null ? capHours * 3600 : null;
+		const rate = rates[getRateKey(billingPeriod.start)] ?? null;
+		const compSecs = capSecs != null ? Math.min(totalSecs, capSecs) : totalSecs;
+		const earned = rate != null ? (compSecs / 3600) * rate : null;
+		const overCap = capSecs != null && totalSecs > capSecs;
+		return { totalSecs, capHours, earned, overCap };
+	});
 
 	const groupedEntries = $derived(() => {
 		const groups = {};
@@ -455,6 +490,33 @@
 					{/if}
 				</div>
 			{/if}
+		</div>
+
+		<!-- Billing period summary -->
+		{@const ps = periodSummary()}
+		<div class="mb-6 px-3 py-3" style="border: 1px dotted rgba(255,255,255,0.1);">
+			<p style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.3); margin-bottom: 0.35rem;">
+				{billingPeriod.label}
+			</p>
+			<div class="flex gap-5 flex-wrap items-baseline">
+				<span style="font-family: 'Courier', monospace; font-size: 0.9rem;">
+					{fmtDuration(ps.totalSecs)} logged
+					{#if ps.capHours != null}
+						<span style="color: rgba(255,255,255,0.3);"> / {ps.capHours}h cap</span>
+					{/if}
+				</span>
+				{#if ps.earned != null}
+					<span style="font-family: 'Courier', monospace; font-size: 0.9rem; color: rgba(255,255,255,0.7);">
+						${ps.earned.toFixed(2)} earned
+					</span>
+				{/if}
+				{#if ps.overCap}
+					<span
+						title="monthly cap of {ps.capHours}h reached — hours above cap are logged but uncompensated"
+						style="font-family: 'Courier', monospace; font-size: 0.82rem; color: #f4a261; cursor: default;"
+					>⚠ cap reached</span>
+				{/if}
+			</div>
 		</div>
 
 		<div class="flex items-center gap-3 mb-8">
