@@ -192,7 +192,7 @@
 				<p class="mt-2" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.35);">enter a rate above to continue</p>
 			{/if}
 
-			<div id="invoice-hourglass" class="mt-8" style="width: 300px; margin-left: auto; margin-right: auto;"></div>
+			<div id="invoice-hourglass" class="mt-12" style="width: 345px; margin-left: auto; margin-right: auto;"></div>
 		{/if}
 	</div>
 </div>
