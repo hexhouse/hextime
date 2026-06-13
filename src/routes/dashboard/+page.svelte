@@ -24,7 +24,7 @@
 
 	const projects = ['Space/Facilities/Infrastructure', 'Membership', 'Public Messaging', 'Events', 'Maintainer Meeting', 'Finance', 'Organizational Stewardship', 'Residency'];
 
-	const importPlaceholder = `If you prefer, paste your notes here — one entry per line, with the time at the end:
+	const importPlaceholder = `If you prefer, paste your notes here. One entry per line, with the time at the end:
 
 - toured Juniper .5
 - onboarded Juniper 1
