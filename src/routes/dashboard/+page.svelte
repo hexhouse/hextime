@@ -185,13 +185,35 @@
 		periodCapHours != null && periodTotalSecs > periodCapHours * 3600
 	);
 
-	const groupedEntries = $derived(() => {
-		const groups = {};
+	function periodForDate(dateStr) {
+		const [y, mo, da] = dateStr.split('-').map(Number);
+		let sm = da >= 15 ? mo - 1 : mo - 2;
+		let sy = y;
+		if (sm < 0) { sm += 12; sy--; }
+		let em = sm + 1, ey = sy;
+		if (em > 11) { em = 0; ey++; }
+		const start = `${sy}-${String(sm + 1).padStart(2,'0')}-15`;
+		const end = `${ey}-${String(em + 1).padStart(2,'0')}-14`;
+		const s = new Date(sy, sm, 15), e = new Date(ey, em, 14);
+		const label = s.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+			+ ' – ' + e.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+		return { start, end, label };
+	}
+
+	const groupedByPeriod = $derived(() => {
+		const map = {};
 		for (const e of entries) {
-			if (!groups[e.entry_date]) groups[e.entry_date] = [];
-			groups[e.entry_date].push(e);
+			const p = periodForDate(e.entry_date);
+			if (!map[p.start]) map[p.start] = { period: p, entries: [] };
+			map[p.start].entries.push(e);
 		}
-		return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
+		return Object.values(map)
+			.map(g => ({
+				...g,
+				totalSecs: g.entries.reduce((s, e) => s + e.duration_seconds, 0),
+				entries: g.entries.sort((a, b) => b.entry_date.localeCompare(a.entry_date)),
+			}))
+			.sort((a, b) => b.period.start.localeCompare(a.period.start));
 	});
 
 	// Bulk import
@@ -535,19 +557,14 @@
 			</div>
 		</div>
 
-		<div class="flex items-center gap-3 mb-8">
-			<hr class="flex-1 hex-divider" />
-			<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.35);">today: {fmtDuration(todayTotal)}</span>
-			<hr class="flex-1 hex-divider" />
-		</div>
-
 		<section>
-			{#each groupedEntries() as [date, group]}
-				<div class="mb-8">
-					<p class="mb-3" style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3);">
-						{fmtDate(date)} — {fmtDuration(group.reduce((s, e) => s + e.duration_seconds, 0))}
-					</p>
-					{#each group as entry}
+			{#each groupedByPeriod() as { period, entries: periodEntries, totalSecs: pTotal }, i}
+				<div class="mb-10">
+					<div class="flex items-baseline justify-between mb-4" style="border-bottom: 1px solid rgba(255,255,255,{i === 0 ? '0.12' : '0.06'}); padding-bottom: 0.5rem;">
+						<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,{i === 0 ? '0.5' : '0.25'});">{period.label}</span>
+						<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,{i === 0 ? '0.4' : '0.2'});">{fmtDuration(pTotal)}</span>
+					</div>
+					{#each periodEntries as entry}
 						{#if editingId === entry.id}
 							<div style="padding: 0.6rem 0; border-bottom: 1px dotted rgba(255,255,255,0.1);">
 								<input
@@ -580,15 +597,16 @@
 								</div>
 							</div>
 						{:else}
-							<div class="flex items-baseline justify-between py-2" style="border-bottom: 1px dotted rgba(255,255,255,0.1);">
-								<div class="flex items-baseline gap-3">
-									<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem;">{entry.description}</span>
+							<div class="flex items-baseline justify-between py-2" style="border-bottom: 1px dotted rgba(255,255,255,0.08);">
+								<div class="flex items-baseline gap-3 flex-wrap">
+									<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem; color: rgba(255,255,255,{i === 0 ? '1' : '0.65'});">{entry.description}</span>
 									{#if entry.project}
-										<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3);">{entry.project}</span>
+										<span style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.22);">{entry.project}</span>
 									{/if}
 								</div>
-								<div class="flex items-baseline gap-3">
-									<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.55);">{fmtDuration(entry.duration_seconds)}</span>
+								<div class="flex items-baseline gap-3" style="flex-shrink: 0; margin-left: 0.75rem;">
+									<span style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.2);">{fmtDate(entry.entry_date)}</span>
+									<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,{i === 0 ? '0.55' : '0.35'});">{fmtDuration(entry.duration_seconds)}</span>
 									<button onclick={() => startEdit(entry)} style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.2); background: none; border: none; cursor: pointer; padding: 0;">edit</button>
 									<button onclick={() => deleteEntry(entry.id)} style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,100,100,0.25); background: none; border: none; cursor: pointer; padding: 0;">×</button>
 								</div>
