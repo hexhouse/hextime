@@ -249,6 +249,7 @@
 		<div class="flex gap-5">
 			<a href="/invoice" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">invoice</a>
 			<a href="/profile/setup" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">profile</a>
+			<a href="/maintainer" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">maintainer</a>
 			<a href="/admin" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">admin</a>
 			<button onclick={signOut} style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4); background: none; border: none; cursor: pointer;">sign out</button>
 		</div>
@@ -523,6 +524,6 @@
 	</div>
 
 	<div class="fixed bottom-4 right-5">
-		<a href="https://docs.google.com/document/d/103PKUMAJ1aXdLwx6XYLSUxXY11OVc16D8GhGrR8aIzg/edit?usp=sharing" target="_blank" rel="noopener" style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.2); text-decoration: none;">maintainer roles ↗</a>
+		<a href="https://docs.google.com/document/d/103PKUMAJ1aXdLwx6XYLSUxXY11OVc16D8GhGrR8aIzg/edit?usp=sharing" target="_blank" rel="noopener" style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.5); text-decoration: none;">maintainer roles ↗</a>
 	</div>
 </div>
