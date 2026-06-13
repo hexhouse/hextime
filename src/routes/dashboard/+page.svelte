@@ -13,6 +13,8 @@
 	let project = $state('');
 	let hours = $state('');
 	let minutes = $state('');
+	let decimalHours = $state('');
+	let decimalMode = $state(false);
 	let entryDate = $state(today());
 
 	let entries = $state([]);
@@ -67,12 +69,15 @@
 	}
 
 	async function logManual() {
-		const h = parseInt(hours) || 0;
-		const m = parseInt(minutes) || 0;
-		const duration = h * 3600 + m * 60;
+		let duration;
+		if (decimalMode) {
+			duration = Math.round((parseFloat(decimalHours) || 0) * 3600);
+		} else {
+			duration = (parseInt(hours) || 0) * 3600 + (parseInt(minutes) || 0) * 60;
+		}
 		if (!description || duration === 0) return;
 		await saveEntry(description, project || 'Other', duration, entryDate || today());
-		description = ''; project = ''; hours = ''; minutes = ''; entryDate = today();
+		description = ''; project = ''; hours = ''; minutes = ''; decimalHours = ''; entryDate = today();
 	}
 
 	async function saveEntry(desc, proj, durationSeconds, date) {
@@ -121,30 +126,33 @@
 		const year = new Date().getFullYear();
 		let currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
 		const results = [];
+		const skipped = [];
 		for (const raw of importText.split('\n')) {
 			const line = raw.trim();
 			const monthKey = line.toLowerCase().replace(/[^a-z]/g, '');
 			if (monthMap[monthKey]) { currentMonth = monthMap[monthKey]; continue; }
 			if (!line.startsWith('-')) continue;
 			const content = line.slice(1).trim();
+			if (!content) continue;
 			const match = content.match(/^(.+?)\s+([\d.]+)\s*$/);
-			if (!match) continue;
+			if (!match) { skipped.push(content); continue; }
 			const desc = match[1].trim();
 			const hrs = parseFloat(match[2]);
-			if (!desc || isNaN(hrs) || hrs <= 0) continue;
+			if (!desc || isNaN(hrs) || hrs <= 0) { skipped.push(content); continue; }
 			results.push({
 				description: desc,
 				duration_seconds: Math.round(hrs * 3600),
 				entry_date: `${year}-${currentMonth}-01`,
 			});
 		}
-		return results;
+		return { results, skipped };
 	});
 
 	async function runImport() {
-		if (!parsedImport().length) return;
+		const { results } = parsedImport();
+		if (!results.length) return;
 		importing = true;
-		const rows = parsedImport().map(e => ({
+		const rows = results.map(e => ({
 			user_id: auth.session.user.id,
 			description: e.description,
 			project: importProject,
@@ -176,19 +184,17 @@
 	<div class="max-w-lg mx-auto px-6 py-10">
 
 		<section class="mb-12">
-			<div class="flex gap-5 mb-7" style="border-bottom: 1px dotted rgba(255,255,255,0.15); padding-bottom: 0.75rem;">
-				<button
-					onclick={() => { mode = 'manual'; if (running) toggleTimer(); }}
-					style="font-family: 'Courier', monospace; font-size: 1rem; background: none; border: none; cursor: pointer; padding-bottom: 2px;
-					color: {mode === 'manual' ? 'white' : 'rgba(255,255,255,0.35)'};
-					border-bottom: {mode === 'manual' ? '1px solid white' : '1px solid transparent'};"
-				>log time</button>
-				<button
-					onclick={() => mode = 'timer'}
-					style="font-family: 'Courier', monospace; font-size: 1rem; background: none; border: none; cursor: pointer; padding-bottom: 2px;
-					color: {mode === 'timer' ? 'white' : 'rgba(255,255,255,0.35)'};
-					border-bottom: {mode === 'timer' ? '1px solid white' : '1px solid transparent'};"
-				>timer</button>
+			<div class="flex items-center mb-7">
+				<div style="display: inline-flex; border: 1px dotted rgba(255,255,255,0.25); font-family: 'Courier', monospace; font-size: 1rem;">
+					<button
+						onclick={() => { mode = 'manual'; if (running) toggleTimer(); }}
+						style="padding: 0.25em 0.8em; background: {mode === 'manual' ? 'rgba(255,255,255,0.12)' : 'none'}; color: {mode === 'manual' ? 'white' : 'rgba(255,255,255,0.35)'}; border: none; cursor: pointer;"
+					>log time</button>
+					<button
+						onclick={() => mode = 'timer'}
+						style="padding: 0.25em 0.8em; background: {mode === 'timer' ? 'rgba(255,255,255,0.12)' : 'none'}; color: {mode === 'timer' ? 'white' : 'rgba(255,255,255,0.35)'}; border: none; cursor: pointer; border-left: 1px dotted rgba(255,255,255,0.25);"
+					>timer</button>
+				</div>
 			</div>
 
 			{#if mode === 'manual'}
@@ -204,14 +210,21 @@
 						/>
 					</div>
 					<div class="flex gap-6 flex-wrap items-end">
-						<div>
-							<label class="block mb-1" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">hours</label>
-							<input type="number" bind:value={hours} class="hex-input" placeholder="0" min="0" style="width: 3.5rem;" />
-						</div>
-						<div>
-							<label class="block mb-1" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">min</label>
-							<input type="number" bind:value={minutes} class="hex-input" placeholder="0" min="0" max="59" style="width: 3.5rem;" />
-						</div>
+						{#if decimalMode}
+							<div>
+								<label class="block mb-1" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">hours (decimal)</label>
+								<input type="number" bind:value={decimalHours} class="hex-input" placeholder="1.5" min="0" step="0.25" style="width: 5rem;" />
+							</div>
+						{:else}
+							<div>
+								<label class="block mb-1" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">hours</label>
+								<input type="number" bind:value={hours} class="hex-input" placeholder="0" min="0" style="width: 3.5rem;" />
+							</div>
+							<div>
+								<label class="block mb-1" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">min</label>
+								<input type="number" bind:value={minutes} class="hex-input" placeholder="0" min="0" max="59" style="width: 3.5rem;" />
+							</div>
+						{/if}
 						<div>
 							<label class="block mb-1" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">project</label>
 							<select bind:value={project} class="hex-select">
@@ -224,7 +237,13 @@
 							<input type="date" bind:value={entryDate} class="hex-input" style="width: 8rem; color-scheme: dark;" />
 						</div>
 					</div>
-					<button class="btn-silver" onclick={logManual}>+ log entry</button>
+					<div class="flex items-center gap-4 mt-1">
+						<button class="btn-silver" onclick={logManual}>+ log entry</button>
+						<button
+							onclick={() => decimalMode = !decimalMode}
+							style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3); background: none; border: none; cursor: pointer;"
+						>{decimalMode ? 'switch to h/min' : 'switch to decimal (1.5h)'}</button>
+					</div>
 				</div>
 
 			{:else}
@@ -276,22 +295,33 @@
 						</div>
 						<div>
 							<p style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.35);">
-								{parsedImport().length} entries detected
+								{parsedImport().results.length} entries detected
 							</p>
 						</div>
 					</div>
 
-					{#if parsedImport().length > 0}
+					{#if parsedImport().results.length > 0}
 						<div class="space-y-1" style="max-height: 160px; overflow-y: auto;">
-							{#each parsedImport() as e}
+							{#each parsedImport().results as e}
 								<div style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.4); border-bottom: 1px dotted rgba(255,255,255,0.08); padding: 0.2rem 0;">
 									{e.entry_date} · {fmtDuration(e.duration_seconds)} · {e.description}
 								</div>
 							{/each}
 						</div>
 						<button class="btn-silver" onclick={runImport} disabled={importing}>
-							{importing ? '...' : `import ${parsedImport().length} entries`}
+							{importing ? '...' : `import ${parsedImport().results.length} entries`}
 						</button>
+					{/if}
+
+					{#if parsedImport().skipped.length > 0}
+						<div class="mt-3">
+							<p style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,150,100,0.6); margin-bottom: 0.3rem;">
+								{parsedImport().skipped.length} lines skipped (no hours found):
+							</p>
+							{#each parsedImport().skipped as s}
+								<div style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,150,100,0.4); padding: 0.1rem 0;">— {s}</div>
+							{/each}
+						</div>
 					{/if}
 
 					{#if importDone != null}
