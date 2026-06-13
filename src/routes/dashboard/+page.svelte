@@ -532,7 +532,7 @@
 		</div>
 
 		<!-- Billing period summary -->
-		<div class="mb-6 px-3 py-3" style="border: 1px dotted rgba(255,255,255,0.1);">
+		<div class="mt-10 mb-6 px-3 py-3" style="border: 1px dotted rgba(255,255,255,0.1);">
 			<p style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.3); margin-bottom: 0.35rem;">
 				{billingPeriod.label}
 			</p>
@@ -557,7 +557,7 @@
 			</div>
 		</div>
 
-		<section>
+		<section class="mt-10">
 			{#each groupedByPeriod() as { period, entries: periodEntries, totalSecs: pTotal }, i}
 				<div class="mb-10">
 					<div class="flex items-baseline justify-between mb-4" style="border-bottom: 1px solid rgba(255,255,255,{i === 0 ? '0.12' : '0.06'}); padding-bottom: 0.5rem;">
