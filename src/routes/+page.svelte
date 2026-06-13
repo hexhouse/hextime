@@ -34,9 +34,9 @@
 		<h1 class="mb-8" style="line-height: 1; display: flex; align-items: center; justify-content: center; gap: 0.2em;">
 			<span style="font-family: 'Pinyon Script', cursive; font-size: 4.5rem;">HEX</span>
 			<span style="display: inline-block; border: 10px solid transparent; border-image: url('/assets/timer.png') 100%; padding: 0.2em; line-height: 0;">
-				<img src="/assets/timer.png" alt="" style="width: 1.8rem; display: block;" />
+				<img src="/assets/timer.png" alt="" style="width: 2.4rem; display: block;" />
 			</span>
-			<span style="font-family: 'Skanaus-Display', sans-serif; font-size: 3rem;">time</span>
+			<span style="font-family: 'Skanaus-Display', sans-serif; font-size: 4.5rem; position: relative; bottom: 12%;">time</span>
 		</h1>
 
 		<div style="border: 12px solid transparent; border-image: url('/assets/timer.png') 100%; padding: 2rem;">
