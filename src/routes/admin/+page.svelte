@@ -15,6 +15,15 @@
 		return `${m}m`;
 	}
 
+	function billingStart() {
+		const d = new Date();
+		if (d.getDate() >= 15) { d.setDate(15); }
+		else { d.setMonth(d.getMonth() - 1); d.setDate(15); }
+		return d.toISOString().slice(0, 10);
+	}
+
+	const periodStart = billingStart();
+
 	async function loadContractors() {
 		const { data: profiles } = await supabase
 			.from('profiles')
@@ -23,31 +32,31 @@
 		if (!profiles) return;
 
 		const today = new Date().toISOString().slice(0, 10);
-		const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
 
 		const { data: entries } = await supabase
 			.from('time_entries')
 			.select('*')
-			.gte('entry_date', weekAgo);
+			.gte('entry_date', periodStart);
 
 		contractors = profiles
-			.filter(p => p.role === 'contractor')
+			.filter(p => p.role === 'contractor' || p.role === 'admin')
 			.map(p => {
 				const mine = (entries ?? []).filter(e => e.user_id === p.id);
 				return {
 					...p,
 					initials: (p.name ?? '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
 					todaySeconds: mine.filter(e => e.entry_date === today).reduce((s, e) => s + e.duration_seconds, 0),
-					weekSeconds: mine.reduce((s, e) => s + e.duration_seconds, 0),
-					entries: mine.slice(0, 5),
+					periodSeconds: mine.reduce((s, e) => s + e.duration_seconds, 0),
+					entries: mine,
 				};
-			});
+			})
+			.filter(p => p.periodSeconds > 0 || p.role === 'contractor');
 	}
 
 	loadRates();
 	loadContractors();
 
-	const totalWeekSeconds = $derived(contractors.reduce((s, c) => s + c.weekSeconds, 0));
+	const totalPeriodSeconds = $derived(contractors.reduce((s, c) => s + c.periodSeconds, 0));
 </script>
 
 <div class="min-h-screen bg-[#0d0d0d] text-white" style="font-family: 'Diolce-Regular', sans-serif;">
@@ -106,12 +115,12 @@
 
 		<section>
 			<h2 style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.6rem; margin-bottom: 0.25rem;">contractor hours</h2>
-			<p class="mb-6" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.35);">this week</p>
+			<p class="mb-6" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.35);">current period · since {periodStart}</p>
 
 			<div class="flex gap-8 mb-8" style="font-family: 'Courier', monospace;">
 				<div>
 					<p style="color: rgba(255,255,255,0.4);">total</p>
-					<p class="text-2xl">{fmtDuration(totalWeekSeconds)}</p>
+					<p class="text-2xl">{fmtDuration(totalPeriodSeconds)}</p>
 				</div>
 				<div>
 					<p style="color: rgba(255,255,255,0.4);">active today</p>
@@ -138,7 +147,7 @@
 								</div>
 							</div>
 							<div class="flex items-center gap-4">
-								<span style="font-family: 'Courier', monospace;">{fmtDuration(c.weekSeconds)}</span>
+								<span style="font-family: 'Courier', monospace;">{fmtDuration(c.periodSeconds)}</span>
 								<span style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.3);">{expanded === c.id ? '▲' : '▼'}</span>
 							</div>
 						</button>
