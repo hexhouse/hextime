@@ -22,7 +22,7 @@
 
 	let entries = $state([]);
 
-	const projects = ['Space/Facilities/Infra', 'Membership', 'Public Messaging', 'Events', 'Maintainer Meeting', 'Finance', 'Organizational Stewardship', 'Residency'];
+	const projects = ['Space/Facilities/Infrastructure', 'Membership', 'Public Messaging', 'Events', 'Maintainer Meeting', 'Finance', 'Organizational Stewardship', 'Residency'];
 
 	function today() {
 		return new Date().toISOString().slice(0, 10);
@@ -249,7 +249,7 @@
 		if (/finance|payment|invoice|stripe|gusto|bank|account|budget|expense/.test(d)) return 'Finance';
 		if (/member|membership|contract|onboard/.test(d)) return 'Membership';
 		if (/event|party|fundrais|shiv|nye|celebrat|gather/.test(d)) return 'Events';
-		if (/clean|bathroom|kitchen|trash|facilit|infra|fix|repair|build|install|plumb|electric/.test(d)) return 'Space/Facilities/Infra';
+		if (/clean|bathroom|kitchen|trash|facilit|infra|fix|repair|build|install|plumb|electric/.test(d)) return 'Space/Facilities/Infrastructure';
 		if (/newsletter|instagram|social|post|promo|messag|website|flyer|announc|photo|video/.test(d)) return 'Public Messaging';
 		if (/residency|resident/.test(d)) return 'Residency';
 		return 'Organizational Stewardship';

@@ -2,7 +2,7 @@
 	import { supabase } from '$lib/supabase.js';
 
 	const PROJECT_COLORS = {
-		'Space/Facilities/Infra':      '#7eb8d4',
+		'Space/Facilities/Infrastructure': '#7eb8d4',
 		'Membership':                  '#a8d8a8',
 		'Public Messaging':            '#f4a261',
 		'Events':                      '#e76f51',
