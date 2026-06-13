@@ -71,6 +71,6 @@
 		</div>
 	</div>
 
-	<img src="/assets/hextime-atm.png" alt="" style="width: 100%; max-width: 256px; margin-top: 4rem; display: block;" />
+	<img src="/assets/hextime-atm.png" alt="" style="width: 100%; max-width: 220px; margin-top: 4rem; display: block;" />
 
 </div>
