@@ -31,12 +31,8 @@
 <div class="min-h-screen bg-black flex items-center justify-center px-4">
 	<div class="w-full max-w-xs text-center">
 
-		<h1 class="mb-8" style="line-height: 1; display: flex; align-items: center; justify-content: center; gap: 0.2em;">
-			<span style="font-family: 'Pinyon Script', cursive; font-size: 4.5rem;">HEX</span>
-			<span style="display: inline-block; border: 10px solid transparent; border-image: url('/assets/timer.png') 100%; padding: 0.2em; line-height: 0;">
-				<img src="/assets/timer.png" alt="" style="width: 4rem; display: block;" />
-			</span>
-			<span style="font-family: 'Skanaus-Display', sans-serif; font-size: 4.5rem; position: relative; bottom: 25%;">time</span>
+		<h1 class="mb-8" style="font-size: 4.5rem; font-family: 'Skanaus-Display', sans-serif; line-height: 1.2; text-align: center;">
+			<span style="font-family: 'Pinyon Script', cursive;">HEX</span>&nbsp;<span style="display: inline-block; border: 8px solid transparent; border-image: url('/assets/timer.png') 100%; vertical-align: middle; line-height: 0; padding: 0.1em;"><img src="/assets/timer.png" alt="" style="width: 0.8em; display: block;" /></span>&nbsp;<span>time</span>
 		</h1>
 
 		<div style="border: 12px solid transparent; border-image: url('/assets/timer.png') 100%; padding: 2rem;">
