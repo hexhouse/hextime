@@ -113,7 +113,7 @@
 		<div class="flex items-start justify-between mb-8">
 			<div>
 				<h2 style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.6rem;">maintainers</h2>
-				<p style="font-family: 'Courier', monospace; font-size: 0.78rem; color: rgba(255,255,255,0.35); margin-top: 0.2rem;">aggregated hours logged per payment period</p>
+				<p style="font-family: 'Courier', monospace; font-size: 0.78rem; color: rgba(255,255,255,0.35); margin-top: 0.2rem;">aggregated hours logged per<br>payment period</p>
 			</div>
 			<select
 				bind:value={selectedKey}
