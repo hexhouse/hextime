@@ -226,7 +226,7 @@
 							bind:value={description}
 							class="hex-input"
 							style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem;"
-							placeholder="describe the work..."
+							placeholder="work description..."
 							onkeydown={(e) => e.key === 'Enter' && logManual()}
 						/>
 					</div>
@@ -273,7 +273,7 @@
 						<span style="font-family: 'Courier', monospace; font-size: 3.5rem; letter-spacing: 0.06em;">{fmt(elapsed)}</span>
 					</div>
 					<div>
-						<input type="text" bind:value={description} disabled={running} class="hex-input" style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem;" placeholder="describe the work..." />
+						<input type="text" bind:value={description} disabled={running} class="hex-input" style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem;" placeholder="work description..." />
 					</div>
 					<div>
 						<label class="block mb-1" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">project</label>
