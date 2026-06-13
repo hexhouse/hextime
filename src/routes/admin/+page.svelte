@@ -44,7 +44,7 @@
 		return periods;
 	}
 
-	const periods = getBillingPeriods();
+	const periods = getBillingPeriods().filter(p => p.start >= '2026-02-15');
 
 	function contractorsForPeriod(start, end) {
 		const entries = allEntries.filter(e => e.entry_date >= start && e.entry_date <= end);
