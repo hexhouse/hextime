@@ -158,18 +158,23 @@
 
 	const billingPeriod = currentBillingPeriod();
 
-	const periodSummary = $derived(() => {
-		const userId = auth.session?.user?.id;
-		const periodEntries = entries.filter(e => e.entry_date >= billingPeriod.start && e.entry_date <= billingPeriod.end);
-		const totalSecs = periodEntries.reduce((s, e) => s + e.duration_seconds, 0) + (running ? elapsed : 0);
-		const capHours = userId ? getCapForDate(userId, billingPeriod.start) : null;
-		const capSecs = capHours != null ? capHours * 3600 : null;
-		const rate = rates[getRateKey(billingPeriod.start)] ?? null;
-		const compSecs = capSecs != null ? Math.min(totalSecs, capSecs) : totalSecs;
-		const earned = rate != null ? (compSecs / 3600) * rate : null;
-		const overCap = capSecs != null && totalSecs > capSecs;
-		return { totalSecs, capHours, earned, overCap };
-	});
+	const periodTotalSecs = $derived(
+		entries.filter(e => e.entry_date >= billingPeriod.start && e.entry_date <= billingPeriod.end)
+			.reduce((s, e) => s + e.duration_seconds, 0) + (running ? elapsed : 0)
+	);
+	const periodCapHours = $derived(
+		auth.session?.user?.id ? getCapForDate(auth.session.user.id, billingPeriod.start) : null
+	);
+	const periodRate = $derived(rates[getRateKey(billingPeriod.start)] ?? null);
+	const periodCompSecs = $derived(
+		periodCapHours != null ? Math.min(periodTotalSecs, periodCapHours * 3600) : periodTotalSecs
+	);
+	const periodEarned = $derived(
+		periodRate != null ? (periodCompSecs / 3600) * periodRate : null
+	);
+	const periodOverCap = $derived(
+		periodCapHours != null && periodTotalSecs > periodCapHours * 3600
+	);
 
 	const groupedEntries = $derived(() => {
 		const groups = {};
@@ -492,26 +497,25 @@
 		</div>
 
 		<!-- Billing period summary -->
-		{@const ps = periodSummary()}
 		<div class="mb-6 px-3 py-3" style="border: 1px dotted rgba(255,255,255,0.1);">
 			<p style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.3); margin-bottom: 0.35rem;">
 				{billingPeriod.label}
 			</p>
 			<div class="flex gap-5 flex-wrap items-baseline">
 				<span style="font-family: 'Courier', monospace; font-size: 0.9rem;">
-					{fmtDuration(ps.totalSecs)} logged
-					{#if ps.capHours != null}
-						<span style="color: rgba(255,255,255,0.3);"> / {ps.capHours}h cap</span>
+					{fmtDuration(periodTotalSecs)} logged
+					{#if periodCapHours != null}
+						<span style="color: rgba(255,255,255,0.3);"> / {periodCapHours}h cap</span>
 					{/if}
 				</span>
-				{#if ps.earned != null}
+				{#if periodEarned != null}
 					<span style="font-family: 'Courier', monospace; font-size: 0.9rem; color: rgba(255,255,255,0.7);">
-						${ps.earned.toFixed(2)} earned
+						${periodEarned.toFixed(2)} earned
 					</span>
 				{/if}
-				{#if ps.overCap}
+				{#if periodOverCap}
 					<span
-						title="monthly cap of {ps.capHours}h reached — hours above cap are logged but uncompensated"
+						title="quarterly cap of {periodCapHours}h reached — hours above cap are logged but uncompensated"
 						style="font-family: 'Courier', monospace; font-size: 0.82rem; color: #f4a261; cursor: default;"
 					>⚠ cap reached</span>
 				{/if}
