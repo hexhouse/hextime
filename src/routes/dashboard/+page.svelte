@@ -96,6 +96,43 @@
 		goto('/');
 	}
 
+	// Edit / delete
+	let editingId = $state(null);
+	let editDesc = $state('');
+	let editHours = $state('');
+	let editProject = $state('');
+	let editDate = $state('');
+
+	function startEdit(entry) {
+		editingId = entry.id;
+		editDesc = entry.description;
+		editHours = String(+(entry.duration_seconds / 3600).toFixed(4));
+		editProject = entry.project || '';
+		editDate = entry.entry_date;
+	}
+
+	function cancelEdit() { editingId = null; }
+
+	async function saveEdit() {
+		const secs = Math.round(parseFloat(editHours) * 3600);
+		if (!editDesc || !secs) return;
+		const { error } = await supabase.from('time_entries').update({
+			description: editDesc, project: editProject,
+			duration_seconds: secs, entry_date: editDate,
+		}).eq('id', editingId);
+		if (!error) {
+			entries = entries.map(e => e.id === editingId
+				? { ...e, description: editDesc, project: editProject, duration_seconds: secs, entry_date: editDate }
+				: e);
+			editingId = null;
+		}
+	}
+
+	async function deleteEntry(id) {
+		const { error } = await supabase.from('time_entries').delete().eq('id', id);
+		if (!error) entries = entries.filter(e => e.id !== id);
+	}
+
 	const todayTotal = $derived(
 		entries.filter(e => e.entry_date === today()).reduce((s, e) => s + e.duration_seconds, 0) + (running ? elapsed : 0)
 	);
@@ -432,15 +469,52 @@
 						{fmtDate(date)} — {fmtDuration(group.reduce((s, e) => s + e.duration_seconds, 0))}
 					</p>
 					{#each group as entry}
-						<div class="flex items-baseline justify-between py-2" style="border-bottom: 1px dotted rgba(255,255,255,0.1);">
-							<div class="flex items-baseline gap-3">
-								<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem;">{entry.description}</span>
-								{#if entry.project}
-									<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3);">{entry.project}</span>
-								{/if}
+						{#if editingId === entry.id}
+							<div style="padding: 0.6rem 0; border-bottom: 1px dotted rgba(255,255,255,0.1);">
+								<input
+									type="text"
+									bind:value={editDesc}
+									class="hex-input"
+									style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem; margin-bottom: 0.5rem;"
+									onkeydown={(e) => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') cancelEdit(); }}
+								/>
+								<div class="flex gap-4 items-end flex-wrap">
+									<div>
+										<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.4);">hours</label>
+										<input type="number" bind:value={editHours} class="hex-input" min="0" step="0.25" style="width: 4.5rem;" />
+									</div>
+									<div>
+										<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.4);">project</label>
+										<select bind:value={editProject} class="hex-select" style="font-size: 0.9rem;">
+											<option value="">—</option>
+											{#each projects as p}<option value={p}>{p}</option>{/each}
+										</select>
+									</div>
+									<div>
+										<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.4);">date</label>
+										<input type="date" bind:value={editDate} class="hex-input" style="width: 8rem; color-scheme: dark;" />
+									</div>
+									<div class="flex gap-3 items-center">
+										<button class="btn-silver" onclick={saveEdit} style="font-size: 0.9rem;">save</button>
+										<button onclick={cancelEdit} style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3); background: none; border: none; cursor: pointer;">cancel</button>
+									</div>
+								</div>
 							</div>
-							<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.55);">{fmtDuration(entry.duration_seconds)}</span>
-						</div>
+						{:else}
+							<div class="flex items-baseline justify-between py-2" style="border-bottom: 1px dotted rgba(255,255,255,0.1);">
+								<div class="flex items-baseline gap-3">
+									<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem;">{entry.description}</span>
+									{#if entry.project}
+										<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3);">{entry.project}</span>
+									{/if}
+								</div>
+								<div class="flex items-baseline gap-3">
+									<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.55);">{fmtDuration(entry.duration_seconds)}</span>
+									<button onclick={() => startEdit(entry)} style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.2); background: none; border: none; cursor: pointer; padding: 0;">edit</button>
+									<button onclick={() => deleteEntry(entry.id)} style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,100,100,0.25); background: none; border: none; cursor: pointer; padding: 0;">×</button>
+								</div>
+							</div>
+						{/if}
 					{/each}
 				</div>
 			{/each}
