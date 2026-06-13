@@ -1,5 +1,33 @@
 import { supabase } from './supabase.js'
 
+// Caps — keyed by `${userId}::${year}-Q${quarter}`
+export const caps = $state({});
+
+export async function loadCaps(userId = null) {
+	let query = supabase.from('contractor_quarterly_caps').select('*');
+	if (userId) query = query.eq('user_id', userId);
+	const { data } = await query;
+	if (data) {
+		for (const row of data) {
+			caps[`${row.user_id}::${row.year}-Q${row.quarter}`] = row.hours_cap != null ? parseFloat(row.hours_cap) : null;
+		}
+	}
+}
+
+export async function saveCap(userId, year, quarter, val) {
+	const hours_cap = val === '' || val == null ? null : parseFloat(val);
+	caps[`${userId}::${year}-Q${quarter}`] = hours_cap;
+	await supabase.from('contractor_quarterly_caps').upsert(
+		{ user_id: userId, year, quarter, hours_cap },
+		{ onConflict: 'user_id,year,quarter' }
+	);
+}
+
+export function getCapForDate(userId, dateStr) {
+	const { year, quarter } = getQuarterInfo(dateStr);
+	return caps[`${userId}::${year}-Q${quarter}`] ?? null;
+}
+
 export const quarterLabels = {
 	1: 'Q1  Mar 15 – Jun 14',
 	2: 'Q2  Jun 15 – Sep 14',

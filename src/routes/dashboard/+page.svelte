@@ -2,7 +2,7 @@
 	import { supabase } from '$lib/supabase.js';
 	import { auth } from '$lib/auth.svelte.js';
 	import { goto } from '$app/navigation';
-	import { rates, loadRates, getRateKey } from '$lib/rates.svelte.js';
+	import { rates, loadRates, getRateKey, loadCaps, getCapForDate } from '$lib/rates.svelte.js';
 
 	let mode = $state('manual');
 	let running = $state(false);
@@ -19,7 +19,6 @@
 	let entryDate = $state(today());
 
 	let entries = $state([]);
-	let userProfile = $state(null);
 
 	const projects = ['Space/Facilities/Infra', 'Membership', 'Public Messaging', 'Events', 'Maintainer Meeting', 'Finance', 'Organizational Stewardship', 'Residency'];
 
@@ -58,8 +57,7 @@
 		if (auth.session?.user) {
 			loadEntries();
 			loadRates();
-			supabase.from('profiles').select('monthly_hours_cap').eq('id', auth.session.user.id).single()
-				.then(({ data }) => { if (data) userProfile = data; });
+			loadCaps(auth.session.user.id);
 		}
 	});
 
@@ -161,9 +159,10 @@
 	const billingPeriod = currentBillingPeriod();
 
 	const periodSummary = $derived(() => {
+		const userId = auth.session?.user?.id;
 		const periodEntries = entries.filter(e => e.entry_date >= billingPeriod.start && e.entry_date <= billingPeriod.end);
 		const totalSecs = periodEntries.reduce((s, e) => s + e.duration_seconds, 0) + (running ? elapsed : 0);
-		const capHours = userProfile?.monthly_hours_cap ?? null;
+		const capHours = userId ? getCapForDate(userId, billingPeriod.start) : null;
 		const capSecs = capHours != null ? capHours * 3600 : null;
 		const rate = rates[getRateKey(billingPeriod.start)] ?? null;
 		const compSecs = capSecs != null ? Math.min(totalSecs, capSecs) : totalSecs;

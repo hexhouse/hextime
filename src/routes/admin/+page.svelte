@@ -1,6 +1,6 @@
 <script>
 	import { supabase } from '$lib/supabase.js';
-	import { rates, loadRates, saveRate, quarterLabels } from '$lib/rates.svelte.js';
+	import { rates, loadRates, saveRate, quarterLabels, caps, loadCaps, saveCap } from '$lib/rates.svelte.js';
 
 	let profiles = $state([]);
 	let allEntries = $state([]);
@@ -62,10 +62,11 @@
 
 	async function loadData() {
 		loadRates();
+		loadCaps();
 		const cutoff = new Date();
 		cutoff.setFullYear(cutoff.getFullYear() - 1);
 		const [{ data: pData }, { data: eData }] = await Promise.all([
-			supabase.from('profiles').select('id, name, role, monthly_hours_cap'),
+			supabase.from('profiles').select('id, name, role'),
 			supabase.from('time_entries').select('*').gte('entry_date', cutoff.toISOString().slice(0, 10)),
 		]);
 		if (pData) profiles = pData;
@@ -75,12 +76,7 @@
 
 	loadData();
 
-	async function saveCap(userId, val) {
-		const cap = val === '' || val == null ? null : parseFloat(val);
-		await supabase.from('profiles').update({ monthly_hours_cap: cap }).eq('id', userId);
-		const p = profiles.find(p => p.id === userId);
-		if (p) p.monthly_hours_cap = cap;
-	}
+
 </script>
 
 <div class="min-h-screen bg-[#0d0d0d] text-white" style="font-family: 'Diolce-Regular', sans-serif;">
@@ -138,28 +134,44 @@
 		<hr class="hex-divider" />
 
 		<section>
-			<h2 style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.6rem; margin-bottom: 0.25rem;">monthly caps</h2>
-			<p class="mb-6" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.35);">max compensated hours per billing period, per contractor</p>
-			<div>
-				{#each profiles.filter(p => p.role === 'contractor' || p.role === 'admin') as p}
-					<div class="flex items-center justify-between py-3" style="border-bottom: 1px dotted rgba(255,255,255,0.12);">
-						<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem;">{p.name ?? '—'}</span>
-						<div class="flex items-baseline gap-1">
-							<input
-								type="number"
-								value={p.monthly_hours_cap ?? ''}
-								onchange={(e) => saveCap(p.id, e.target.value)}
-								class="hex-input text-right"
-								style="width: 4rem; font-family: 'Courier', monospace;"
-								placeholder="—"
-								min="0"
-								step="0.5"
-							/>
-							<span style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.3);">h/mo</span>
-						</div>
-					</div>
+			<h2 style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.6rem; margin-bottom: 0.25rem;">quarterly caps</h2>
+			<p class="mb-5" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.35);">max compensated hours per billing period, per contractor per quarter</p>
+
+			<div class="flex gap-4 mb-5">
+				{#each years as y}
+					<button
+						onclick={() => ratesYear = y}
+						style="font-family: 'Courier', monospace; font-size: 1rem; background: none; border: none; cursor: pointer; padding-bottom: 2px;
+						color: {ratesYear === y ? 'white' : 'rgba(255,255,255,0.35)'};
+						border-bottom: {ratesYear === y ? '1px solid white' : '1px solid transparent'};"
+					>{y}</button>
 				{/each}
 			</div>
+
+			{#each profiles.filter(p => p.role === 'contractor' || p.role === 'admin') as p}
+				<div class="py-4" style="border-bottom: 1px dotted rgba(255,255,255,0.12);">
+					<p style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem; margin-bottom: 0.5rem;">{p.name ?? '—'}</p>
+					<div class="flex gap-5 flex-wrap">
+						{#each quarters as q}
+							{@const key = `${p.id}::${ratesYear}-Q${q}`}
+							<div class="flex items-baseline gap-1">
+								<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.35);">Q{q}</span>
+								<input
+									type="number"
+									value={caps[key] ?? ''}
+									onchange={(e) => saveCap(p.id, ratesYear, q, e.target.value)}
+									class="hex-input text-right"
+									style="width: 3.5rem; font-family: 'Courier', monospace; font-size: 0.9rem;"
+									placeholder="—"
+									min="0"
+									step="0.5"
+								/>
+								<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3);">h</span>
+							</div>
+						{/each}
+					</div>
+				</div>
+			{/each}
 		</section>
 
 		<hr class="hex-divider" />

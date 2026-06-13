@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { supabase } from '$lib/supabase.js';
 	import { auth } from '$lib/auth.svelte.js';
-	import { rates, loadRates, groupByRate } from '$lib/rates.svelte.js';
+	import { rates, loadRates, groupByRate, loadCaps, getCapForDate } from '$lib/rates.svelte.js';
 
 	let profile = $state(null);
 	let allEntries = $state([]);
@@ -30,6 +30,7 @@
 	onMount(async () => {
 		if (!auth.session?.user) return;
 		loadRates();
+		loadCaps(auth.session.user.id);
 		const [{ data: p }, { data: e }] = await Promise.all([
 			supabase.from('profiles').select('*').eq('id', auth.session.user.id).single(),
 			supabase.from('time_entries').select('*').eq('user_id', auth.session.user.id).order('entry_date', { ascending: false }),
@@ -74,7 +75,9 @@
 		return { comp, over };
 	}
 
-	const capHours = $derived(profile?.monthly_hours_cap ?? null);
+	const capHours = $derived(
+		auth.session?.user?.id ? getCapForDate(auth.session.user.id, startDate) : null
+	);
 	const { comp: compEntries, over: overEntries } = $derived(splitByCap(filtered, capHours));
 
 	const rateGroups = $derived(groupByRate(compEntries));
