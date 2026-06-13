@@ -419,13 +419,17 @@
 								</div>
 							</div>
 						</div>
-						<textarea
-							bind:value={importText}
-							rows="10"
-							class="hex-input"
-							style="width: 100%; font-family: 'Courier', monospace; font-size: 0.82rem; resize: vertical; background: rgba(255,255,255,0.03); padding: 0.5rem;"
-							placeholder={importPlaceholder}
-						></textarea>
+						<div style="position: relative;">
+							<textarea
+								bind:value={importText}
+								rows="10"
+								class="hex-input"
+								style="width: 100%; font-family: 'Courier', monospace; font-size: 0.82rem; resize: vertical; background: rgba(255,255,255,0.03); padding: 0.5rem;"
+							></textarea>
+							{#if !importText}
+								<div style="position: absolute; top: 0.5rem; left: 0.5rem; right: 0.5rem; pointer-events: none; white-space: pre-wrap; font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.28); line-height: 1.5;">{importPlaceholder}</div>
+							{/if}
+						</div>
 
 						{#if parsedImport().results.length > 0}
 							<div class="flex items-center gap-4">
