@@ -28,13 +28,13 @@
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap">
 </svelte:head>
 
-<div class="min-h-screen bg-black flex items-center justify-center px-4">
+<div class="min-h-screen bg-black flex flex-col items-center justify-center px-4">
+
+	<h1 class="mb-8" style="font-size: 4.5rem; font-family: 'Skanaus-Display', sans-serif; line-height: 1.3; text-align: center; white-space: nowrap;">
+		<span style="font-family: 'Pinyon Script', cursive;">HEX</span>&nbsp;<img src="/assets/timer.png" alt="" style="width: 0.8em; vertical-align: middle;" />&nbsp;<span>time</span>
+	</h1>
+
 	<div class="w-full max-w-xs text-center">
-
-		<h1 class="mb-8" style="font-size: 4.5rem; font-family: 'Skanaus-Display', sans-serif; line-height: 1.3; text-align: center;">
-			<span style="font-family: 'Pinyon Script', cursive;">HEX</span>&nbsp;<img src="/assets/timer.png" alt="" style="width: 0.8em; vertical-align: middle;" />&nbsp;<span>time</span>
-		</h1>
-
 		<div style="border: 12px solid transparent; border-image: url('/assets/timer.png') 100%; padding: 2rem;">
 			<form class="space-y-6 text-left" onsubmit={(e) => { e.preventDefault(); signIn(); }}>
 				<div>
@@ -62,6 +62,6 @@
 				</button>
 			</div>
 		</div>
-
 	</div>
+
 </div>
