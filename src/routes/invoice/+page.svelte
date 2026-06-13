@@ -7,25 +7,50 @@
 	let profile = $state(null);
 	let allEntries = $state([]);
 
-	let startDate = $state(defaultStart());
-	let endDate = $state(defaultEnd());
 	let invoiceNumber = $state('001');
 	let notes = $state('');
 	let showPreview = $state(false);
 	let manualRates = $state({});
+	let customDates = $state(false);
 
-	function defaultStart() {
-		const d = new Date();
-		d.setDate(15);
-		d.setMonth(d.getMonth() - 1);
-		return d.toISOString().slice(0, 10);
+	function getBillingPeriods(count = 13) {
+		const periods = [];
+		const now = new Date();
+		let sm = now.getDate() >= 15 ? now.getMonth() : now.getMonth() - 1;
+		let sy = now.getFullYear();
+		if (sm < 0) { sm = 11; sy--; }
+		for (let i = 0; i < count; i++) {
+			let em = sm + 1, ey = sy;
+			if (em > 11) { em = 0; ey++; }
+			const start = `${sy}-${String(sm + 1).padStart(2,'0')}-15`;
+			const end = `${ey}-${String(em + 1).padStart(2,'0')}-14`;
+			const s = new Date(sy, sm, 15), e = new Date(ey, em, 14);
+			const label = s.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+				+ ' – ' + e.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+			periods.push({ start, end, label, key: start });
+			sm--; if (sm < 0) { sm = 11; sy--; }
+		}
+		return periods;
 	}
 
-	function defaultEnd() {
-		const d = new Date();
-		d.setDate(15);
-		return d.toISOString().slice(0, 10);
-	}
+	const periods = getBillingPeriods();
+
+	let fromPeriodKey = $state(periods[0].key);
+	let throughPeriodKey = $state(periods[0].key);
+	let customStart = $state(periods[0].start);
+	let customEnd = $state(periods[0].end);
+
+	const startDate = $derived(
+		customDates ? customStart : (periods.find(p => p.key === fromPeriodKey)?.start ?? '')
+	);
+	const endDate = $derived(
+		customDates ? customEnd : (() => {
+			const from = periods.find(p => p.key === fromPeriodKey);
+			const through = periods.find(p => p.key === throughPeriodKey);
+			if (!from || !through) return '';
+			return from.end > through.end ? from.end : through.end;
+		})()
+	);
 
 	onMount(async () => {
 		if (!auth.session?.user) return;
@@ -138,20 +163,45 @@
 	<div class="max-w-lg mx-auto px-6 py-10 space-y-8">
 		<h2 style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.6rem;">generate invoice</h2>
 
-		<div class="flex gap-6 flex-wrap items-end">
-			<div>
-				<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">from</label>
-				<input type="date" bind:value={startDate} class="hex-input" style="width: 9rem; color-scheme: dark;" />
+		{#if !customDates}
+			<div class="flex gap-6 flex-wrap items-end">
+				<div>
+					<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">from period</label>
+					<select bind:value={fromPeriodKey} class="hex-select" style="font-family: 'Courier', monospace; font-size: 0.9rem;">
+						{#each periods as p}<option value={p.key}>{p.label}</option>{/each}
+					</select>
+				</div>
+				<div>
+					<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">through period</label>
+					<select bind:value={throughPeriodKey} class="hex-select" style="font-family: 'Courier', monospace; font-size: 0.9rem;">
+						{#each periods as p}<option value={p.key}>{p.label}</option>{/each}
+					</select>
+				</div>
+				<div>
+					<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">invoice #</label>
+					<input type="text" bind:value={invoiceNumber} class="hex-input" style="width: 5rem;" />
+				</div>
 			</div>
-			<div>
-				<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">to</label>
-				<input type="date" bind:value={endDate} class="hex-input" style="width: 9rem; color-scheme: dark;" />
+		{:else}
+			<div class="flex gap-6 flex-wrap items-end">
+				<div>
+					<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">from</label>
+					<input type="date" bind:value={customStart} class="hex-input" style="width: 9rem; color-scheme: dark;" />
+				</div>
+				<div>
+					<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">to</label>
+					<input type="date" bind:value={customEnd} class="hex-input" style="width: 9rem; color-scheme: dark;" />
+				</div>
+				<div>
+					<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">invoice #</label>
+					<input type="text" bind:value={invoiceNumber} class="hex-input" style="width: 5rem;" />
+				</div>
 			</div>
-			<div>
-				<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">invoice #</label>
-				<input type="text" bind:value={invoiceNumber} class="hex-input" style="width: 5rem;" />
-			</div>
-		</div>
+		{/if}
+		<button
+			onclick={() => customDates = !customDates}
+			style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.2); background: none; border: none; cursor: pointer; padding: 0; margin-top: -1rem;"
+		>{customDates ? '← back to payment periods' : 'custom date range'}</button>
 
 		<div>
 			<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">notes (optional)</label>
