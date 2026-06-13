@@ -36,6 +36,16 @@
 		]);
 		if (p) profile = p;
 		if (e) allEntries = e;
+
+		const script = document.createElement('script');
+		script.src = '/assets/asciinema-player.min.js';
+		script.onload = () => {
+			window.AsciinemaPlayer.create('/assets/10.cast', document.getElementById('invoice-hourglass'), {
+				speed: 2, idleTimeLimit: 1, autoPlay: true, loop: true, preload: true,
+				controls: false, cols: 57, rows: 26, startAt: 4, theme: 'bla',
+			});
+		};
+		document.head.appendChild(script);
 	});
 
 	const filtered = $derived(
@@ -79,6 +89,7 @@
 </script>
 
 <svelte:head>
+	<link rel="stylesheet" href="/assets/asciinema-player.css" />
 	<style>
 		@media print {
 			.no-print { display: none !important; }
@@ -175,11 +186,13 @@
 			{/if}
 
 			<button class="btn-silver mt-4" onclick={printInvoice} disabled={hasUnratedEntries}>
-				print / save as PDF
+				save as PDF
 			</button>
 			{#if hasUnratedEntries}
 				<p class="mt-2" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.35);">enter a rate above to continue</p>
 			{/if}
+
+			<div id="invoice-hourglass" class="mt-8" style="width: 260px;"></div>
 		{/if}
 	</div>
 </div>
