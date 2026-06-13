@@ -35,7 +35,7 @@
 	}
 </style>
 
-<div class="min-h-screen bg-black flex flex-col items-center justify-center px-4">
+<div class="min-h-screen bg-[#111111] flex flex-col items-center justify-center px-4">
 
 	<h1 class="login-title mb-8" style="font-size: 3rem; font-family: 'Skanaus-Display', sans-serif; line-height: 1.3; text-align: center; white-space: nowrap;">
 		<span style="font-family: 'Pinyon Script', cursive;">HEX</span>&nbsp;<span style="display: inline-block; border: 8px solid transparent; border-image: url('/assets/timer.png') 100%; vertical-align: middle; line-height: 0; margin-left: 0.25em;"><img src="/assets/timer.png" alt="" style="width: 0.8em; display: block;" /></span>&nbsp;<span class="time-word" style="font-size: 2.5rem;">TIME</span>

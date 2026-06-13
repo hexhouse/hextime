@@ -16,8 +16,12 @@
 	--font-mono: 'Courier', monospace;
 }
 
+:root {
+	--bg: #111111;
+}
+
 html, body {
-	background-color: black;
+	background-color: var(--bg);
 	color: white;
 	font-family: 'Diolce-Regular', sans-serif;
 }
@@ -110,6 +114,6 @@ h1, h2 {
 }
 
 .hex-select option {
-	background: black;
+	background: #111111;
 	color: white;
 }

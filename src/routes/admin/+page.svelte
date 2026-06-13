@@ -50,7 +50,7 @@
 	const totalWeekSeconds = $derived(contractors.reduce((s, c) => s + c.weekSeconds, 0));
 </script>
 
-<div class="min-h-screen bg-black text-white" style="font-family: 'Diolce-Regular', sans-serif;">
+<div class="min-h-screen bg-[#111111] text-white" style="font-family: 'Diolce-Regular', sans-serif;">
 	<nav class="px-6 py-4 flex items-center justify-between" style="border-bottom: 1px dotted rgba(255,255,255,0.25);">
 		<span style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.1rem;">hex time</span>
 		<div class="flex items-center gap-5">

@@ -112,6 +112,7 @@
 	// Bulk import
 	let showImport = $state(false);
 	let importText = $state('');
+	let importFormat = $state('hours'); // 'hours' | 'percent' | 'minutes'
 	let importStage = $state('paste'); // 'paste' | 'categorize'
 	let stagedEntries = $state([]);
 	let batchProject = $state('');
@@ -123,6 +124,40 @@
 		may: '05', june: '06', july: '07', august: '08',
 		september: '09', october: '10', november: '11', december: '12'
 	};
+
+	// Auto-detects suffix; falls back to importFormat for bare numbers.
+	function parseTimeToken(token, fallbackFormat) {
+		// h:mm or hh:mm
+		const colonMatch = token.match(/^(\d+):(\d{2})$/);
+		if (colonMatch) {
+			const s = Math.round((parseInt(colonMatch[1]) + parseInt(colonMatch[2]) / 60) * 3600);
+			return s > 0 ? s : null;
+		}
+		// percent: 25% = 15 min
+		const pctMatch = token.match(/^([\d.]+)%$/);
+		if (pctMatch) {
+			const s = Math.round(parseFloat(pctMatch[1]) / 100 * 3600);
+			return s > 0 ? s : null;
+		}
+		// minutes: 90m, 90min, 90mins
+		const minMatch = token.match(/^([\d.]+)mins?$/i);
+		if (minMatch) {
+			const s = Math.round(parseFloat(minMatch[1]) * 60);
+			return s > 0 ? s : null;
+		}
+		// hours: 1.5h, 1.5hr, 1.5hrs
+		const hrMatch = token.match(/^([\d.]+)hrs?$/i);
+		if (hrMatch) {
+			const s = Math.round(parseFloat(hrMatch[1]) * 3600);
+			return s > 0 ? s : null;
+		}
+		// bare number — use fallback format
+		const bare = parseFloat(token);
+		if (isNaN(bare) || bare <= 0) return null;
+		if (fallbackFormat === 'percent') return Math.round(bare / 100 * 3600);
+		if (fallbackFormat === 'minutes') return Math.round(bare * 60);
+		return Math.round(bare * 3600);
+	}
 
 	const parsedImport = $derived(() => {
 		const year = new Date().getFullYear();
@@ -136,14 +171,15 @@
 			if (!line.startsWith('-')) continue;
 			const content = line.slice(1).trim();
 			if (!content) continue;
-			const match = content.match(/^(.+?)\s+([\d.]+)\s*$/);
+			// Grab last whitespace-separated token as time; everything before is description
+			const match = content.match(/^(.+)\s+(\S+)\s*$/);
 			if (!match) { skipped.push(content); continue; }
 			const desc = match[1].trim();
-			const hrs = parseFloat(match[2]);
-			if (!desc || isNaN(hrs) || hrs <= 0) { skipped.push(content); continue; }
+			const secs = parseTimeToken(match[2].trim(), importFormat);
+			if (!desc || !secs) { skipped.push(content); continue; }
 			results.push({
 				description: desc,
-				duration_seconds: Math.round(hrs * 3600),
+				duration_seconds: secs,
 				entry_date: `${year}-${currentMonth}-01`,
 			});
 		}
@@ -190,7 +226,7 @@
 	}
 </script>
 
-<div class="min-h-screen bg-black text-white">
+<div class="min-h-screen bg-[#111111] text-white">
 
 	<nav class="px-6 py-4 flex items-center justify-between" style="border-bottom: 1px dotted rgba(255,255,255,0.2);">
 		<span style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.1rem;">hex time</span>
@@ -301,6 +337,14 @@
 				<div class="mt-4 space-y-4">
 
 					{#if importStage === 'paste'}
+						<div style="display: inline-flex; border: 1px dotted rgba(255,255,255,0.2); font-family: 'Courier', monospace; font-size: 0.75rem;">
+							{#each [['hours', 'hours (1.5)'], ['percent', '% of hour (25%)'], ['minutes', 'minutes (90m)']] as [val, label], i}
+								<button
+									onclick={() => importFormat = val}
+									style="padding: 0.2em 0.6em; background: {importFormat === val ? 'rgba(255,255,255,0.1)' : 'none'}; color: {importFormat === val ? 'white' : 'rgba(255,255,255,0.3)'}; border: none; cursor: pointer; {i < 2 ? 'border-right: 1px dotted rgba(255,255,255,0.2);' : ''}"
+								>{label}</button>
+							{/each}
+						</div>
 						<textarea
 							bind:value={importText}
 							rows="10"

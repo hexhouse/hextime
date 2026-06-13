@@ -100,7 +100,7 @@
 </svelte:head>
 
 <!-- Setup UI -->
-<div class="no-print min-h-screen bg-black text-white" style="font-family: 'Diolce-Regular', sans-serif;">
+<div class="no-print min-h-screen bg-[#111111] text-white" style="font-family: 'Diolce-Regular', sans-serif;">
 	<nav class="px-6 py-4 flex items-center justify-between" style="border-bottom: 1px dotted rgba(255,255,255,0.25);">
 		<span style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.1rem;">hex time</span>
 		<a href="/dashboard" class="text-xs" style="color: rgba(255,255,255,0.45); font-family: 'Courier', monospace;">← dashboard</a>
