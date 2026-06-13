@@ -13,32 +13,32 @@
 	let manualRates = $state({});
 	let customDates = $state(false);
 
-	function getBillingPeriods(count = 13) {
+	function getBillingPeriods() {
 		const periods = [];
-		const now = new Date();
-		let sm = now.getDate() >= 15 ? now.getMonth() : now.getMonth() - 1;
-		let sy = now.getFullYear();
-		if (sm < 0) { sm = 11; sy--; }
-		for (let i = 0; i < count; i++) {
-			let em = sm + 1, ey = sy;
-			if (em > 11) { em = 0; ey++; }
+		// Fixed range: Mar 15, 2026 → Mar 14, 2027 (12 periods)
+		for (let i = 0; i < 12; i++) {
+			const sm = (2 + i) % 12; // start month (0-indexed), March = 2
+			const sy = 2026 + Math.floor((2 + i) / 12);
+			const em = (sm + 1) % 12;
+			const ey = sm === 11 ? sy + 1 : sy;
 			const start = `${sy}-${String(sm + 1).padStart(2,'0')}-15`;
 			const end = `${ey}-${String(em + 1).padStart(2,'0')}-14`;
 			const s = new Date(sy, sm, 15), e = new Date(ey, em, 14);
 			const label = s.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 				+ ' – ' + e.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 			periods.push({ start, end, label, key: start });
-			sm--; if (sm < 0) { sm = 11; sy--; }
 		}
-		return periods;
+		return periods.reverse(); // newest first so current period is near the top
 	}
 
 	const periods = getBillingPeriods();
+	const todayStr = new Date().toISOString().slice(0, 10);
+	const defaultPeriod = periods.find(p => todayStr >= p.start && todayStr <= p.end) ?? periods[0];
 
-	let fromPeriodKey = $state(periods[0].key);
-	let throughPeriodKey = $state(periods[0].key);
-	let customStart = $state(periods[0].start);
-	let customEnd = $state(periods[0].end);
+	let fromPeriodKey = $state(defaultPeriod.key);
+	let throughPeriodKey = $state(defaultPeriod.key);
+	let customStart = $state(defaultPeriod.start);
+	let customEnd = $state(defaultPeriod.end);
 
 	const startDate = $derived(
 		customDates ? customStart : (periods.find(p => p.key === fromPeriodKey)?.start ?? '')
