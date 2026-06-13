@@ -110,8 +110,11 @@
 
 	<div class="max-w-lg mx-auto px-6 py-10">
 
-		<div class="flex items-baseline justify-between mb-8">
-			<h2 style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.6rem;">maintainer</h2>
+		<div class="flex items-start justify-between mb-8">
+			<div>
+				<h2 style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.6rem;">maintainers</h2>
+				<p style="font-family: 'Courier', monospace; font-size: 0.78rem; color: rgba(255,255,255,0.35); margin-top: 0.2rem;">aggregated hours logged by project category per payment period</p>
+			</div>
 			<select
 				bind:value={selectedKey}
 				class="hex-select"
@@ -122,6 +125,7 @@
 				{/each}
 			</select>
 		</div>
+
 
 		{#if loading}
 			<p style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.3);">loading...</p>

@@ -290,7 +290,7 @@
 		<div class="flex gap-5">
 			<a href="/invoice" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">invoice</a>
 			<a href="/profile/setup" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">profile</a>
-			<a href="/maintainer" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">maintainer</a>
+			<a href="/maintainer" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">maintainers</a>
 			<a href="/admin" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">admin</a>
 			<button onclick={signOut} style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4); background: none; border: none; cursor: pointer;">sign out</button>
 		</div>
