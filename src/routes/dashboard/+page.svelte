@@ -112,22 +112,17 @@
 	// Bulk import
 	let showImport = $state(false);
 	let importText = $state('');
-	let importFormat = $state('hours'); // 'hours' | 'percent' | 'minutes'
+	let importDate = $state(today());
+	let importFormat = $state('hours'); // 'hours' | 'hhmm' | 'minutes'
 	let importStage = $state('paste'); // 'paste' | 'categorize'
 	let stagedEntries = $state([]);
 	let batchProject = $state('');
 	let importing = $state(false);
 	let importDone = $state(null);
 
-	const monthMap = {
-		january: '01', february: '02', march: '03', april: '04',
-		may: '05', june: '06', july: '07', august: '08',
-		september: '09', october: '10', november: '11', december: '12'
-	};
-
 	// Auto-detects suffix; falls back to importFormat for bare numbers.
 	function parseTimeToken(token, fallbackFormat) {
-		// h:mm or hh:mm (always auto-detected regardless of toggle)
+		// h:mm or hh:mm (always auto-detected)
 		const colonMatch = token.match(/^(\d+):(\d{2})$/);
 		if (colonMatch) {
 			const s = Math.round((parseInt(colonMatch[1]) + parseInt(colonMatch[2]) / 60) * 3600);
@@ -149,32 +144,23 @@
 		const bare = parseFloat(token);
 		if (isNaN(bare) || bare <= 0) return null;
 		if (fallbackFormat === 'minutes') return Math.round(bare * 60);
-		return Math.round(bare * 3600); // hours (default, also used for 'hhmm' toggle)
+		return Math.round(bare * 3600);
 	}
 
 	const parsedImport = $derived(() => {
-		const year = new Date().getFullYear();
-		let currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
 		const results = [];
 		const skipped = [];
 		for (const raw of importText.split('\n')) {
 			const line = raw.trim();
-			const monthKey = line.toLowerCase().replace(/[^a-z]/g, '');
-			if (monthMap[monthKey]) { currentMonth = monthMap[monthKey]; continue; }
 			if (!line.startsWith('-')) continue;
 			const content = line.slice(1).trim();
 			if (!content) continue;
-			// Grab last whitespace-separated token as time; everything before is description
 			const match = content.match(/^(.+)\s+(\S+)\s*$/);
 			if (!match) { skipped.push(content); continue; }
 			const desc = match[1].trim();
 			const secs = parseTimeToken(match[2].trim(), importFormat);
 			if (!desc || !secs) { skipped.push(content); continue; }
-			results.push({
-				description: desc,
-				duration_seconds: secs,
-				entry_date: `${year}-${currentMonth}-01`,
-			});
+			results.push({ description: desc, duration_seconds: secs, entry_date: importDate });
 		}
 		return { results, skipped };
 	});
@@ -322,7 +308,7 @@
 		<!-- Bulk import -->
 		<div class="mb-6">
 			<button
-				onclick={() => { showImport = !showImport; importDone = null; if (!showImport) { importStage = 'paste'; stagedEntries = []; } }}
+				onclick={() => { showImport = !showImport; importDone = null; if (!showImport) { importStage = 'paste'; stagedEntries = []; importDate = today(); } }}
 				style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.25); background: none; border: none; cursor: pointer; padding: 0;"
 			>{showImport ? '▲ close import' : '↓ import from notes'}</button>
 
@@ -330,13 +316,22 @@
 				<div class="mt-4 space-y-4">
 
 					{#if importStage === 'paste'}
-						<div style="display: inline-flex; border: 1px dotted rgba(255,255,255,0.2); font-family: 'Courier', monospace; font-size: 0.75rem;">
-							{#each [['hours', 'hours (1.5)'], ['hhmm', 'h:mm (1:30)'], ['minutes', 'minutes (90)']] as [val, label], i}
-								<button
-									onclick={() => importFormat = val}
-									style="padding: 0.2em 0.6em; background: {importFormat === val ? 'rgba(255,255,255,0.1)' : 'none'}; color: {importFormat === val ? 'white' : 'rgba(255,255,255,0.3)'}; border: none; cursor: pointer; {i < 2 ? 'border-right: 1px dotted rgba(255,255,255,0.2);' : ''}"
-								>{label}</button>
-							{/each}
+						<div class="flex items-end gap-6 flex-wrap">
+							<div>
+								<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.4);">date for all entries</label>
+								<input type="date" bind:value={importDate} class="hex-input" style="width: 9rem; color-scheme: dark; font-family: 'Courier', monospace; font-size: 0.82rem;" />
+							</div>
+							<div>
+								<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.4);">time format</label>
+								<div style="display: inline-flex; border: 1px dotted rgba(255,255,255,0.2); font-family: 'Courier', monospace; font-size: 0.75rem;">
+									{#each [['hours', 'hours (1.5)'], ['hhmm', 'h:mm (1:30)'], ['minutes', 'minutes (90)']] as [val, label], i}
+										<button
+											onclick={() => importFormat = val}
+											style="padding: 0.2em 0.6em; background: {importFormat === val ? 'rgba(255,255,255,0.1)' : 'none'}; color: {importFormat === val ? 'white' : 'rgba(255,255,255,0.3)'}; border: none; cursor: pointer; {i < 2 ? 'border-right: 1px dotted rgba(255,255,255,0.2);' : ''}"
+										>{label}</button>
+									{/each}
+								</div>
+							</div>
 						</div>
 						<textarea
 							bind:value={importText}
