@@ -15,7 +15,9 @@
 	let hours = $state('');
 	let minutes = $state('');
 	let decimalHours = $state('');
-	let decimalMode = $state(false);
+	let decimalMode = $state(
+		typeof localStorage !== 'undefined' && localStorage.getItem('hextime_decimal') === '1'
+	);
 	let entryDate = $state(today());
 
 	let entries = $state([]);
@@ -353,7 +355,7 @@
 					<div class="flex items-center gap-4 mt-1">
 						<button class="btn-silver" onclick={logManual}>+ log entry</button>
 						<button
-							onclick={() => decimalMode = !decimalMode}
+							onclick={() => { decimalMode = !decimalMode; localStorage.setItem('hextime_decimal', decimalMode ? '1' : '0'); }}
 							style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3); background: none; border: none; cursor: pointer;"
 						>{decimalMode ? 'switch to h/min' : 'switch to decimal (1.5h)'}</button>
 					</div>
