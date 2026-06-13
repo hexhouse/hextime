@@ -40,17 +40,16 @@
 	let customStart = $state(defaultPeriod.start);
 	let customEnd = $state(defaultPeriod.end);
 
-	const startDate = $derived(
+	let startDate = $derived(
 		customDates ? customStart : (periods.find(p => p.key === fromPeriodKey)?.start ?? '')
 	);
-	const endDate = $derived(
-		customDates ? customEnd : (() => {
-			const from = periods.find(p => p.key === fromPeriodKey);
-			const through = periods.find(p => p.key === throughPeriodKey);
-			if (!from || !through) return '';
-			return from.end > through.end ? from.end : through.end;
-		})()
-	);
+	let endDate = $derived.by(() => {
+		if (customDates) return customEnd;
+		const from = periods.find(p => p.key === fromPeriodKey);
+		const through = periods.find(p => p.key === throughPeriodKey);
+		if (!from || !through) return '';
+		return from.end > through.end ? from.end : through.end;
+	});
 
 	onMount(async () => {
 		if (!auth.session?.user) return;
