@@ -417,7 +417,7 @@
 							rows="10"
 							class="hex-input"
 							style="width: 100%; font-family: 'Courier', monospace; font-size: 0.82rem; resize: vertical; background: rgba(255,255,255,0.03); padding: 0.5rem;"
-							placeholder="paste your notes here — entries like '- did the thing 1.5' will be detected"
+							placeholder="paste your notes here, one entry per line, with the time at the end:&#10;&#10;- toured Juniper .5&#10;- onboarded Juniper 1&#10;- updated events payment sheet .3&#10;- toured a potential wedding 1"
 						></textarea>
 
 						{#if parsedImport().results.length > 0}
