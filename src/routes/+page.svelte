@@ -24,10 +24,18 @@
 	}
 </script>
 
+<svelte:head>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap">
+</svelte:head>
+
 <div class="min-h-screen bg-black flex items-center justify-center px-4">
 	<div class="w-full max-w-xs text-center">
 
-		<h1 class="text-4xl mb-1" style="font-family: 'Skanaus-Display', sans-serif;">hex time</h1>
+		<h1 class="mb-1" style="font-size: 3rem; line-height: 1; display: flex; align-items: center; justify-content: center; gap: 0.15em;">
+			<span style="font-family: 'Pinyon Script', cursive;">hex</span>
+			<img src="/assets/timer.png" alt="" style="width: 0.8em; display: inline-block;" />
+			<span style="font-family: 'Skanaus-Display', sans-serif;">time</span>
+		</h1>
 		<p class="text-sm mb-8" style="color: rgba(255,255,255,0.5);">Hex House · time tracking</p>
 
 		<div style="border: 12px solid transparent; border-image: url('/assets/timer.png') 100%; padding: 2rem;">
