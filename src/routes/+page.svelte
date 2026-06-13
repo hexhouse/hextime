@@ -31,7 +31,7 @@
 <div class="min-h-screen bg-black flex flex-col items-center justify-center px-4">
 
 	<h1 class="mb-8" style="font-size: 4.5rem; font-family: 'Skanaus-Display', sans-serif; line-height: 1.3; text-align: center; white-space: nowrap;">
-		<span style="font-family: 'Pinyon Script', cursive;">HEX</span>&nbsp;<img src="/assets/timer.png" alt="" style="width: 0.8em; vertical-align: middle;" />&nbsp;<span>time</span>
+		<span style="font-family: 'Pinyon Script', cursive;">HEX</span>&nbsp;<img src="/assets/timer.png" alt="" style="width: 0.8em; vertical-align: middle; display: inline;" />&nbsp;<span>time</span>
 	</h1>
 
 	<div class="w-full max-w-xs text-center">
