@@ -561,7 +561,7 @@
 			{#each groupedByPeriod() as { period, entries: periodEntries, totalSecs: pTotal }, i}
 				<div class="mb-10">
 					<div class="flex items-baseline justify-between mb-4" style="border-bottom: 1px solid rgba(255,255,255,{i === 0 ? '0.12' : '0.06'}); padding-bottom: 0.5rem;">
-						<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,{i === 0 ? '0.5' : '0.25'});">{period.label}</span>
+						<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,{i === 0 ? '0.5' : '0.25'});">payment period: {period.label}</span>
 						<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,{i === 0 ? '0.4' : '0.2'});">{fmtDuration(pTotal)}</span>
 					</div>
 					{#each periodEntries as entry}
