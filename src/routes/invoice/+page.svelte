@@ -342,7 +342,13 @@
 			</div>
 		{/if}
 
-		<table style="width: 100%; border-collapse: collapse; font-size: 1rem; margin-bottom: 0.5rem;">
+		<table style="width: 100%; border-collapse: collapse; font-size: 1rem; margin-bottom: 0.5rem; table-layout: fixed;">
+			<colgroup>
+				<col style="width: 42%;" />
+				<col style="width: 28%;" />
+				<col style="width: 16%;" />
+				<col style="width: 14%;" />
+			</colgroup>
 			<thead>
 				<tr style="border-bottom: 1px solid black;">
 					<th style="text-align: left; padding: 0.4rem 0; font-weight: normal; color: #888;">description</th>
@@ -354,10 +360,10 @@
 			<tbody>
 				{#each g.entries as entry}
 					<tr style="border-bottom: 1px dotted #ddd;">
-						<td style="padding: 0.4rem 0;">{entry.description}</td>
-						<td style="padding: 0.4rem 0; color: #666;">{entry.project}</td>
-						<td style="padding: 0.4rem 0;">{fmtDate(entry.entry_date)}</td>
-						<td style="padding: 0.4rem 0; text-align: right;">{fmtDuration(entry.duration_seconds)}</td>
+						<td style="padding: 0.4rem 0.5rem 0.4rem 0; word-break: break-word;">{entry.description}</td>
+						<td style="padding: 0.4rem 0.5rem 0.4rem 0; color: #666; word-break: break-word;">{entry.project}</td>
+						<td style="padding: 0.4rem 0; white-space: nowrap;">{fmtDate(entry.entry_date)}</td>
+						<td style="padding: 0.4rem 0; text-align: right; white-space: nowrap;">{fmtDuration(entry.duration_seconds)}</td>
 					</tr>
 				{/each}
 			</tbody>
@@ -389,7 +395,13 @@
 			<div style="font-size: 1rem; text-transform: uppercase; letter-spacing: 0.08em; color: #aaa; margin-bottom: 0.5rem;">
 				donated / uncompensated · {fmtDuration(overSeconds)}
 			</div>
-			<table style="width: 100%; border-collapse: collapse; font-size: 1rem; color: #aaa;">
+			<table style="width: 100%; border-collapse: collapse; font-size: 1rem; color: #aaa; table-layout: fixed;">
+				<colgroup>
+					<col style="width: 42%;" />
+					<col style="width: 28%;" />
+					<col style="width: 16%;" />
+					<col style="width: 14%;" />
+				</colgroup>
 				<thead>
 					<tr style="border-bottom: 1px dotted #ccc;">
 						<th style="text-align: left; padding: 0.4rem 0; font-weight: normal;">description</th>
@@ -401,10 +413,10 @@
 				<tbody>
 					{#each overEntries as entry}
 						<tr style="border-bottom: 1px dotted #eee;">
-							<td style="padding: 0.4rem 0;">{entry.description}{#if entry._partial} (partial){/if}</td>
-							<td style="padding: 0.4rem 0;">{entry.project}</td>
-							<td style="padding: 0.4rem 0;">{fmtDate(entry.entry_date)}</td>
-							<td style="padding: 0.4rem 0; text-align: right;">{fmtDuration(entry.duration_seconds)}</td>
+							<td style="padding: 0.4rem 0.5rem 0.4rem 0; word-break: break-word;">{entry.description}{#if entry._partial} (partial){/if}</td>
+							<td style="padding: 0.4rem 0.5rem 0.4rem 0; word-break: break-word;">{entry.project}</td>
+							<td style="padding: 0.4rem 0; white-space: nowrap;">{fmtDate(entry.entry_date)}</td>
+							<td style="padding: 0.4rem 0; text-align: right; white-space: nowrap;">{fmtDuration(entry.duration_seconds)}</td>
 						</tr>
 					{/each}
 				</tbody>
