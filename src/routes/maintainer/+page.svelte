@@ -19,6 +19,11 @@
 		return `${m}m`;
 	}
 
+	function fmtDate(d) {
+		const [y, mo, day] = d.split('-');
+		return `${mo}/${day}`;
+	}
+
 	function getBillingPeriods() {
 		const periods = [];
 		const now = new Date();
@@ -42,8 +47,10 @@
 	const periods = getBillingPeriods();
 
 	let selectedKey = $state(periods[0].key);
+	let viewMode = $state('aggregated'); // 'aggregated' | 'byPerson'
 	let slices = $state([]);
 	let totalSeconds = $state(0);
+	let maintainers = $state([]); // for byPerson view
 	let loading = $state(false);
 
 	$effect(() => {
@@ -54,15 +61,20 @@
 	async function loadData() {
 		loading = true;
 		const period = periods.find(p => p.key === selectedKey);
-		const { data } = await supabase
-			.from('time_entries')
-			.select('project, duration_seconds')
-			.gte('entry_date', period.start)
-			.lte('entry_date', period.end);
 
-		if (data) {
+		const [{ data: entryData }, { data: profileData }] = await Promise.all([
+			supabase.from('time_entries')
+				.select('user_id, description, project, duration_seconds, entry_date')
+				.gte('entry_date', period.start)
+				.lte('entry_date', period.end)
+				.order('entry_date', { ascending: false }),
+			supabase.from('profiles').select('id, name'),
+		]);
+
+		if (entryData) {
+			// Aggregated view
 			const groups = {};
-			for (const e of data) {
+			for (const e of entryData) {
 				const proj = e.project || 'Uncategorized';
 				groups[proj] = (groups[proj] || 0) + e.duration_seconds;
 			}
@@ -79,6 +91,19 @@
 					angle += sweep;
 					return s;
 				});
+
+			// By-person view
+			const profileMap = {};
+			for (const p of (profileData ?? [])) profileMap[p.id] = p.name;
+
+			const byPerson = {};
+			for (const e of entryData) {
+				const name = profileMap[e.user_id] ?? 'Unknown';
+				if (!byPerson[name]) byPerson[name] = { name, entries: [], totalSeconds: 0 };
+				byPerson[name].entries.push(e);
+				byPerson[name].totalSeconds += e.duration_seconds;
+			}
+			maintainers = Object.values(byPerson).sort((a, b) => b.totalSeconds - a.totalSeconds);
 		}
 		loading = false;
 	}
@@ -113,57 +138,97 @@
 		<div class="flex items-start justify-between mb-8">
 			<div>
 				<h2 style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.6rem;">maintainers</h2>
-				<p style="font-family: 'Courier', monospace; font-size: 0.78rem; color: rgba(255,255,255,0.35); margin-top: 0.2rem;">aggregated hours logged per<br>payment period</p>
+				<p style="font-family: 'Courier', monospace; font-size: 0.78rem; color: rgba(255,255,255,0.35); margin-top: 0.2rem;">
+					{viewMode === 'aggregated' ? 'aggregated hours logged per' : 'hours logged per'}<br>payment period
+				</p>
 			</div>
-			<select
-				bind:value={selectedKey}
-				class="hex-select"
-				style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.6);"
-			>
-				{#each periods as p}
-					<option value={p.key}>{p.label}</option>
-				{/each}
-			</select>
+			<div class="flex flex-col items-end gap-3">
+				<select
+					bind:value={selectedKey}
+					class="hex-select"
+					style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.6);"
+				>
+					{#each periods as p}
+						<option value={p.key}>{p.label}</option>
+					{/each}
+				</select>
+				<!-- View toggle -->
+				<div style="display: inline-flex; border: 1px dotted rgba(255,255,255,0.2); font-family: 'Courier', monospace; font-size: 0.75rem;">
+					<button
+						onclick={() => viewMode = 'aggregated'}
+						style="padding: 0.2em 0.7em; background: {viewMode === 'aggregated' ? 'rgba(255,255,255,0.1)' : 'none'}; color: {viewMode === 'aggregated' ? 'white' : 'rgba(255,255,255,0.3)'}; border: none; border-right: 1px dotted rgba(255,255,255,0.2); cursor: pointer;"
+					>overview</button>
+					<button
+						onclick={() => viewMode = 'byPerson'}
+						style="padding: 0.2em 0.7em; background: {viewMode === 'byPerson' ? 'rgba(255,255,255,0.1)' : 'none'}; color: {viewMode === 'byPerson' ? 'white' : 'rgba(255,255,255,0.3)'}; border: none; cursor: pointer;"
+					>by maintainer</button>
+				</div>
+			</div>
 		</div>
-
 
 		{#if loading}
 			<p style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.3);">loading...</p>
-		{:else if slices.length === 0}
-			<p style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.3);">no entries this period</p>
+
+		{:else if viewMode === 'aggregated'}
+
+			{#if slices.length === 0}
+				<p style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.3);">no entries this period</p>
+			{:else}
+				<!-- Donut chart -->
+				<div style="display: flex; justify-content: center; margin-bottom: 2rem;">
+					<svg viewBox="0 0 260 260" width="260" height="260">
+						{#each slices as slice}
+							<path d={donutPath(slice.angle, slice.sweep)} fill={slice.color} opacity="0.85" />
+						{/each}
+						<text x={CX} y={CY - 6} text-anchor="middle" style="font-family: 'Courier', monospace; font-size: 11px; fill: rgba(255,255,255,0.35);">total</text>
+						<text x={CX} y={CY + 12} text-anchor="middle" style="font-family: 'Courier', monospace; font-size: 15px; fill: white;">{fmtDuration(totalSeconds)}</text>
+					</svg>
+				</div>
+				<!-- Legend -->
+				<div class="space-y-2">
+					{#each slices as slice}
+						<div class="flex items-center justify-between py-2" style="border-bottom: 1px dotted rgba(255,255,255,0.08);">
+							<div class="flex items-center gap-3">
+								<span style="width: 10px; height: 10px; border-radius: 50%; background: {slice.color}; display: inline-block; flex-shrink: 0;"></span>
+								<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 0.95rem;">{slice.project}</span>
+							</div>
+							<div class="flex gap-4" style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.5);">
+								<span>{fmtDuration(slice.seconds)}</span>
+								<span style="width: 3.5rem; text-align: right;">{slice.pct}%</span>
+							</div>
+						</div>
+					{/each}
+				</div>
+			{/if}
+
 		{:else}
 
-			<!-- Donut chart -->
-			<div style="display: flex; justify-content: center; margin-bottom: 2rem;">
-				<svg viewBox="0 0 260 260" width="260" height="260">
-					{#each slices as slice}
-						<path
-							d={donutPath(slice.angle, slice.sweep)}
-							fill={slice.color}
-							opacity="0.85"
-						/>
-					{/each}
-					<!-- Center label -->
-					<text x={CX} y={CY - 6} text-anchor="middle" style="font-family: 'Courier', monospace; font-size: 11px; fill: rgba(255,255,255,0.35);">total</text>
-					<text x={CX} y={CY + 12} text-anchor="middle" style="font-family: 'Courier', monospace; font-size: 15px; fill: white;">{fmtDuration(totalSeconds)}</text>
-				</svg>
-			</div>
-
-			<!-- Legend -->
-			<div class="space-y-2">
-				{#each slices as slice}
-					<div class="flex items-center justify-between py-2" style="border-bottom: 1px dotted rgba(255,255,255,0.08);">
-						<div class="flex items-center gap-3">
-							<span style="width: 10px; height: 10px; border-radius: 50%; background: {slice.color}; display: inline-block; flex-shrink: 0;"></span>
-							<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 0.95rem;">{slice.project}</span>
+			{#if maintainers.length === 0}
+				<p style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.3);">no entries this period</p>
+			{:else}
+				{#each maintainers as m}
+					<div class="mb-8">
+						<div class="flex items-baseline justify-between mb-3" style="border-bottom: 1px dotted rgba(255,255,255,0.15); padding-bottom: 0.5rem;">
+							<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 1.1rem;">{m.name}</span>
+							<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.4);">{fmtDuration(m.totalSeconds)}</span>
 						</div>
-						<div class="flex gap-4" style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.5);">
-							<span>{fmtDuration(slice.seconds)}</span>
-							<span style="width: 3.5rem; text-align: right;">{slice.pct}%</span>
-						</div>
+						{#each m.entries as entry}
+							<div class="flex items-baseline justify-between py-1.5" style="border-bottom: 1px dotted rgba(255,255,255,0.05);">
+								<div class="flex items-baseline gap-3" style="min-width: 0; flex: 1;">
+									{#if entry.project && PROJECT_COLORS[entry.project]}
+										<span style="width: 7px; height: 7px; border-radius: 50%; background: {PROJECT_COLORS[entry.project]}; display: inline-block; flex-shrink: 0; margin-bottom: 2px;"></span>
+									{/if}
+									<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 0.95rem; color: {entry.project && PROJECT_COLORS[entry.project] ? `color-mix(in srgb, ${PROJECT_COLORS[entry.project]} 55%, rgba(255,255,255,0.8))` : 'rgba(255,255,255,0.8)'}; overflow: hidden; text-overflow: ellipsis;">{entry.description || '—'}</span>
+								</div>
+								<div class="flex gap-3 flex-shrink-0 ml-3" style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.3);">
+									<span>{fmtDate(entry.entry_date)}</span>
+									<span>{fmtDuration(entry.duration_seconds)}</span>
+								</div>
+							</div>
+						{/each}
 					</div>
 				{/each}
-			</div>
+			{/if}
 
 		{/if}
 	</div>
