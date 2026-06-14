@@ -380,7 +380,7 @@
 						border-radius: 2px;
 						filter: url(#invoice-noise) drop-shadow(0 0 6px rgba(190, 160, 150, 0.75)) drop-shadow(0 0 20px rgba(180, 30, 110, 0.55)) drop-shadow(0 0 45px rgba(0, 10, 180, 0.4));
 					"
-				>Hex ☄︎ Invoice &amp; Reimbursement ☄︎ Submission&nbsp;Form</a>
+				>Hex ☄︎ Invoice &amp; Reimbursement ☄︎ <em>Submission&nbsp;Form</em></a>
 			</div>
 
 			<div id="invoice-hourglass" style="width: 430px; margin-left: auto; margin-right: auto; margin-top: 80px;"></div>

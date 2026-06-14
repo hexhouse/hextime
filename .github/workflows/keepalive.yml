@@ -11,9 +11,16 @@ jobs:
     steps:
       - name: Ping Supabase
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+          RESPONSE=$(curl -s -m 30 -w "\n%{http_code}" \
             "${{ secrets.SUPABASE_URL }}/rest/v1/" \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}")
+          STATUS=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
           echo "HTTP status: $STATUS"
-          if [ "$STATUS" -ge 500 ] || [ "$STATUS" -eq 0 ]; then exit 1; fi
+          echo "Response body: $BODY"
+          if [[ ! "$STATUS" =~ ^[0-9]+$ ]] || [ "$STATUS" -ge 500 ] || [ "$STATUS" -eq 0 ]; then
+            echo "Ping failed — project may be paused or secrets missing"
+            exit 1
+          fi
+          echo "Ping succeeded"
