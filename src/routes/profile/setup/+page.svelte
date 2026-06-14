@@ -56,6 +56,8 @@
 <div class="min-h-screen bg-[#0d0d0d] px-6 py-12">
 	<div class="max-w-md mx-auto">
 
+		<a href="/dashboard" style="font-family: 'Courier', monospace; font-size: 0.9rem; color: rgba(255,255,255,0.35); text-decoration: none; display: inline-block; margin-bottom: 1.5rem;">← dashboard</a>
+
 		<h1 class="text-3xl mb-1" style="font-family: 'Skanaus-Display', sans-serif;">invoice setup</h1>
 		<p class="mb-2" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.5);">Fill this out once. It will appear on every invoice you generate.</p>
 		<hr class="hex-divider my-6" />
