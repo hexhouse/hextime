@@ -63,6 +63,26 @@
 		});
 		submitting = false;
 		if (err) { error = err.message; return; }
+
+		// Apply any matching contractor presets for this first name
+		const firstName = name.trim().split(/\s+/)[0].toLowerCase();
+		if (firstName) {
+			const { data: matchingPresets } = await supabase
+				.from('contractor_presets')
+				.select('*')
+				.eq('name_match', firstName);
+			if (matchingPresets?.length) {
+				for (const preset of matchingPresets) {
+					if (preset.hours_cap != null) {
+						await supabase.from('contractor_quarterly_caps').upsert(
+							{ user_id: auth.session.user.id, year: preset.year, quarter: preset.quarter, hours_cap: preset.hours_cap },
+							{ onConflict: 'user_id,year,quarter', ignoreDuplicates: true }
+						);
+					}
+				}
+			}
+		}
+
 		goto('/dashboard');
 	}
 </script>

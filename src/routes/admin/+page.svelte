@@ -10,6 +10,55 @@
 	const years = [ratesYear, ratesYear + 1];
 	const quarters = [1, 2, 3, 4];
 
+	// Contractor presets — keyed by `${name_match.toLowerCase()}::${year}-Q${quarter}`
+	let presets = $state({});
+	let newPresetName = $state('');
+
+	async function loadPresets() {
+		const { data } = await supabase.from('contractor_presets').select('*');
+		if (data) {
+			presets = {};
+			for (const row of data) {
+				presets[`${row.name_match.toLowerCase()}::${row.year}-Q${row.quarter}`] = row.hours_cap;
+			}
+		}
+	}
+
+	function presetNames() {
+		return [...new Set(Object.keys(presets).map(k => k.split('::')[0]))];
+	}
+
+	async function savePreset(nameMatch, year, quarter, val) {
+		const hours_cap = val === '' || val == null ? null : parseFloat(val);
+		const key = `${nameMatch.toLowerCase()}::${year}-Q${quarter}`;
+		presets[key] = hours_cap;
+		if (hours_cap == null) {
+			await supabase.from('contractor_presets').delete()
+				.eq('name_match', nameMatch.toLowerCase()).eq('year', year).eq('quarter', quarter);
+		} else {
+			await supabase.from('contractor_presets').upsert(
+				{ name_match: nameMatch.toLowerCase(), year, quarter, hours_cap },
+				{ onConflict: 'name_match,year,quarter' }
+			);
+		}
+	}
+
+	async function addPresetName() {
+		const name = newPresetName.trim().split(/\s+/)[0].toLowerCase();
+		if (!name) return;
+		// initialise empty slots so the name appears in the UI
+		for (const q of quarters) {
+			const key = `${name}::${ratesYear}-Q${q}`;
+			if (!(key in presets)) presets[key] = null;
+		}
+		newPresetName = '';
+	}
+
+	async function removePresetName(nameMatch) {
+		await supabase.from('contractor_presets').delete().eq('name_match', nameMatch);
+		presets = Object.fromEntries(Object.entries(presets).filter(([k]) => !k.startsWith(`${nameMatch}::`)));
+	}
+
 	function fmtDuration(s) {
 		const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
 		if (h > 0 && m > 0) return `${h}h ${m}m`;
@@ -63,6 +112,7 @@
 	async function loadData() {
 		loadRates();
 		loadCaps();
+		loadPresets();
 		const cutoff = new Date();
 		cutoff.setFullYear(cutoff.getFullYear() - 1);
 		const [{ data: pData }, { data: eData }] = await Promise.all([
@@ -172,6 +222,67 @@
 					</div>
 				</div>
 			{/each}
+		</section>
+
+		<hr class="hex-divider" />
+
+		<section>
+			<h2 style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.6rem; margin-bottom: 0.25rem;">contractor presets</h2>
+			<p class="mb-5" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.35);">set caps by first name — applied automatically when someone with that name saves their profile</p>
+
+			<div class="flex gap-4 mb-5">
+				{#each years as y}
+					<button
+						onclick={() => ratesYear = y}
+						style="font-family: 'Courier', monospace; font-size: 1rem; background: none; border: none; cursor: pointer; padding-bottom: 2px;
+						color: {ratesYear === y ? 'white' : 'rgba(255,255,255,0.35)'};
+						border-bottom: {ratesYear === y ? '1px solid white' : '1px solid transparent'};"
+					>{y}</button>
+				{/each}
+			</div>
+
+			{#each presetNames() as nameMatch}
+				<div class="py-4" style="border-bottom: 1px dotted rgba(255,255,255,0.12);">
+					<div class="flex items-center justify-between mb-2">
+						<p style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem;">{nameMatch}</p>
+						<button
+							onclick={() => removePresetName(nameMatch)}
+							style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,100,100,0.3); background: none; border: none; cursor: pointer; padding: 0;"
+						>remove</button>
+					</div>
+					<div class="flex gap-5 flex-wrap">
+						{#each quarters as q}
+							{@const key = `${nameMatch}::${ratesYear}-Q${q}`}
+							<div class="flex items-baseline gap-1">
+								<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.35);">Q{q}</span>
+								<input
+									type="number"
+									value={presets[key] ?? ''}
+									onchange={(e) => savePreset(nameMatch, ratesYear, q, e.target.value)}
+									class="hex-input text-right"
+									style="width: 3.5rem; font-family: 'Courier', monospace; font-size: 0.9rem;"
+									placeholder="—"
+									min="0"
+									step="0.5"
+								/>
+								<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3);">h</span>
+							</div>
+						{/each}
+					</div>
+				</div>
+			{/each}
+
+			<div class="flex gap-3 items-center mt-5">
+				<input
+					type="text"
+					bind:value={newPresetName}
+					class="hex-input"
+					placeholder="first name"
+					style="width: 10rem; font-family: 'Courier', monospace;"
+					onkeydown={(e) => { if (e.key === 'Enter') addPresetName(); }}
+				/>
+				<button class="btn-silver" onclick={addPresetName}>add</button>
+			</div>
 		</section>
 
 		<hr class="hex-divider" />
