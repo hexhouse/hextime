@@ -6,6 +6,7 @@
 	let allEntries = $state([]);
 	let expandedPeriod = $state(null);
 	let expandedContractor = $state(null);
+	let isLimitedAdmin = $state(false);
 	let ratesYear = $state(new Date().getFullYear());
 	const years = [ratesYear, ratesYear + 1];
 	const quarters = [1, 2, 3, 4];
@@ -116,12 +117,15 @@
 		loadPresets();
 		const cutoff = new Date();
 		cutoff.setFullYear(cutoff.getFullYear() - 1);
-		const [{ data: pData }, { data: eData }] = await Promise.all([
+		const { data: { user } } = await supabase.auth.getUser();
+		const [{ data: pData }, { data: eData }, { data: myProfile }] = await Promise.all([
 			supabase.from('profiles').select('id, name, role'),
 			supabase.from('time_entries').select('*').gte('entry_date', cutoff.toISOString().slice(0, 10)),
+			user ? supabase.from('profiles').select('limited_admin').eq('id', user.id).single() : Promise.resolve({ data: null }),
 		]);
 		if (pData) profiles = pData;
 		if (eData) allEntries = eData;
+		if (myProfile) isLimitedAdmin = myProfile.limited_admin === true;
 		expandedPeriod = periods[0].key;
 	}
 
@@ -141,6 +145,7 @@
 
 	<div class="max-w-lg mx-auto px-6 py-10 space-y-12">
 
+		{#if !isLimitedAdmin}
 		<section>
 			<h2 style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.6rem; margin-bottom: 0.25rem;">hourly rates</h2>
 			<p class="mb-6" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.35);">
@@ -224,6 +229,7 @@
 				</div>
 			{/each}
 		</section>
+		{/if}
 
 		<hr class="hex-divider" />
 
@@ -304,6 +310,7 @@
 			{/each}
 		</section>
 
+		{#if !isLimitedAdmin}
 		<hr class="hex-divider" />
 
 		<section>
@@ -373,6 +380,7 @@
 			</div>
 			{/if}
 		</section>
+		{/if}
 
 	</div>
 </div>
