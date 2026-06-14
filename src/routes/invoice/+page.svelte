@@ -292,6 +292,10 @@
 				<p class="mt-2" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.35);">enter a rate above to continue</p>
 			{/if}
 
+			<p class="mt-6" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">
+				then <a href="https://docs.google.com/forms/d/e/1FAIpQLSfyonxuZUjctSkVuyfsFe9Mnq5Ot9oDY2DHeI1UcUwfC3g00A/viewform?usp=header" target="_blank" rel="noopener noreferrer" style="color: rgba(255,255,255,0.75); text-decoration: underline; text-underline-offset: 3px;">submit your invoice →</a>
+			</p>
+
 			<div id="invoice-hourglass" style="width: 430px; margin-left: auto; margin-right: auto; margin-top: 80px;"></div>
 		{/if}
 	</div>
