@@ -292,9 +292,39 @@
 				<p class="mt-2" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.35);">enter a rate above to continue</p>
 			{/if}
 
-			<p class="mt-6" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">
-				then <a href="https://docs.google.com/forms/d/e/1FAIpQLSfyonxuZUjctSkVuyfsFe9Mnq5Ot9oDY2DHeI1UcUwfC3g00A/viewform?usp=header" target="_blank" rel="noopener noreferrer" style="color: rgba(255,255,255,0.75); text-decoration: underline; text-underline-offset: 3px;">→ Hex ☄︎ Invoice & Reimbursement ☄︎ Submission Form</a>
-			</p>
+			<div class="mt-8">
+				<p style="font-family: 'Courier', monospace; font-size: 0.85rem; color: rgba(255,255,255,0.3); margin-bottom: 0.6rem;">then</p>
+				<svg style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true">
+					<defs>
+						<filter id="invoice-noise" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+							<feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="4" stitchTiles="stitch" result="noise"/>
+							<feColorMatrix type="saturate" values="0" in="noise" result="mono"/>
+							<feComponentTransfer in="mono" result="boosted">
+								<feFuncA type="linear" slope="1.8"/>
+							</feComponentTransfer>
+							<feBlend in="SourceGraphic" in2="boosted" mode="hard-light" result="blended"/>
+							<feComposite in="blended" in2="SourceGraphic" operator="in"/>
+						</filter>
+					</defs>
+				</svg>
+				<a
+					href="https://docs.google.com/forms/d/e/1FAIpQLSfyonxuZUjctSkVuyfsFe9Mnq5Ot9oDY2DHeI1UcUwfC3g00A/viewform?usp=header"
+					target="_blank"
+					rel="noopener noreferrer"
+					style="
+						display: inline-block;
+						padding: 0.45em 1em;
+						background: #2d005a;
+						color: rgba(220, 170, 255, 0.95);
+						font-family: 'Courier', monospace;
+						font-size: 1rem;
+						text-decoration: none;
+						border: 1px solid rgba(160, 60, 255, 0.35);
+						border-radius: 2px;
+						filter: url(#invoice-noise) drop-shadow(0 0 6px rgba(180, 40, 255, 0.9)) drop-shadow(0 0 22px rgba(140, 0, 230, 0.65)) drop-shadow(0 0 45px rgba(100, 0, 180, 0.4));
+					"
+				>→ Hex ☄︎ Invoice & Reimbursement ☄︎ Submission Form</a>
+			</div>
 
 			<div id="invoice-hourglass" style="width: 430px; margin-left: auto; margin-right: auto; margin-top: 80px;"></div>
 		{/if}
