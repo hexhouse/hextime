@@ -543,7 +543,7 @@
 		</div>
 
 		<!-- Billing period summary -->
-		<div class="mt-10 mb-6 px-3 py-3" style="border: 1px dotted rgba(255,255,255,0.1);">
+		<div class="mt-16 mb-6 px-3 py-3" style="border: 1px dotted rgba(255,255,255,0.1);">
 			<p style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.3); margin-bottom: 0.35rem;">
 				current period: {billingPeriod.label}
 			</p>
