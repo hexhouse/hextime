@@ -13,6 +13,7 @@
 	// Contractor presets — keyed by `${name_match.toLowerCase()}::${year}-Q${quarter}`
 	let presets = $state({});
 	let newPresetName = $state('');
+	let presetsOpen = $state(false);
 
 	async function loadPresets() {
 		const { data } = await supabase.from('contractor_presets').select('*');
@@ -227,7 +228,15 @@
 		<hr class="hex-divider" />
 
 		<section>
-			<h2 style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.6rem; margin-bottom: 0.25rem;">contractor presets</h2>
+			<button
+				onclick={() => presetsOpen = !presetsOpen}
+				style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; display: flex; align-items: baseline; justify-content: space-between; padding: 0; margin-bottom: {presetsOpen ? '1rem' : '0'};"
+			>
+				<h2 style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.6rem; margin: 0;">contractor presets</h2>
+				<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3);">{presetsOpen ? '▲' : '▼'}</span>
+			</button>
+
+			{#if presetsOpen}
 			<p class="mb-5" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.35);">set caps by first name — applied automatically when someone with that name saves their profile</p>
 
 			<div class="flex gap-4 mb-5">
@@ -283,6 +292,7 @@
 				/>
 				<button class="btn-silver" onclick={addPresetName}>add</button>
 			</div>
+			{/if}
 		</section>
 
 		<hr class="hex-divider" />
