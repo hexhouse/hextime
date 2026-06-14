@@ -397,7 +397,7 @@
 						<button class="btn-silver" onclick={logManual}>+ log entry</button>
 						<button
 							onclick={() => { decimalMode = !decimalMode; localStorage.setItem('hextime_decimal', decimalMode ? '1' : '0'); }}
-							style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3); background: none; border: none; cursor: pointer;"
+							style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.3); background: none; border: none; cursor: pointer;"
 						>{decimalMode ? 'switch to h/min' : 'switch to decimal (1.5h)'}</button>
 					</div>
 				</div>
