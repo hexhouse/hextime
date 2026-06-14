@@ -297,10 +297,10 @@
 				<svg style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true">
 					<defs>
 						<filter id="invoice-noise" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
-							<feTurbulence type="fractalNoise" baseFrequency="0.88" numOctaves="4" stitchTiles="stitch" result="noise"/>
+							<feTurbulence type="fractalNoise" baseFrequency="0.92" numOctaves="6" stitchTiles="stitch" result="noise"/>
 							<feColorMatrix type="saturate" values="0" in="noise" result="mono"/>
 							<feComponentTransfer in="mono" result="boosted">
-								<feFuncA type="linear" slope="5"/>
+								<feFuncA type="linear" slope="15"/>
 							</feComponentTransfer>
 							<feBlend in="SourceGraphic" in2="boosted" mode="hard-light" result="blended"/>
 							<feComposite in="blended" in2="SourceGraphic" operator="in"/>
@@ -314,14 +314,14 @@
 					style="
 						display: inline-block;
 						padding: 0.45em 1em;
-						background: #1a1028;
-						color: rgba(195, 175, 215, 0.9);
+						background: #1e0a16;
+						color: rgba(255, 180, 220, 0.92);
 						font-family: 'Courier', monospace;
 						font-size: 1rem;
 						text-decoration: none;
-						border: 1px solid rgba(140, 110, 180, 0.3);
+						border: 1px solid rgba(210, 80, 150, 0.3);
 						border-radius: 2px;
-						filter: url(#invoice-noise) drop-shadow(0 0 5px rgba(140, 80, 200, 0.7)) drop-shadow(0 0 18px rgba(100, 50, 160, 0.5)) drop-shadow(0 0 40px rgba(80, 30, 130, 0.35));
+						filter: url(#invoice-noise) drop-shadow(0 0 6px rgba(220, 60, 150, 0.75)) drop-shadow(0 0 20px rgba(180, 30, 110, 0.55)) drop-shadow(0 0 45px rgba(140, 10, 80, 0.4));
 					"
 				>→ Hex ☄︎ Invoice & Reimbursement ☄︎ Submission Form</a>
 			</div>
