@@ -38,6 +38,16 @@
 	let periodKey = $state(defaultPeriod.key);
 	let customStart = $state(defaultPeriod.start);
 	let customEnd = $state(defaultPeriod.end);
+	let periodDropdownOpen = $state(false);
+
+	function selectPeriod(key) {
+		periodKey = key;
+		periodDropdownOpen = false;
+	}
+
+	function closePeriodDropdown(e) {
+		if (!e.target.closest('.period-dropdown')) periodDropdownOpen = false;
+	}
 
 	let startDate = $derived(
 		customDates ? customStart : (periods.find(p => p.key === periodKey)?.start ?? '')
@@ -150,7 +160,7 @@
 </svelte:head>
 
 <!-- Setup UI -->
-<div class="no-print min-h-screen bg-[#000000] text-white" style="font-family: 'Diolce-Regular', sans-serif;">
+<div class="no-print min-h-screen bg-[#000000] text-white" style="font-family: 'Diolce-Regular', sans-serif;" onclick={closePeriodDropdown}>
 	<nav class="px-6 py-4 flex items-center justify-between" style="border-bottom: 1px dotted rgba(255,255,255,0.25);">
 		<span style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.1rem;">hex time</span>
 		<a href="/dashboard" class="text-xs" style="color: rgba(255,255,255,0.45); font-family: 'Courier', monospace;">← dashboard</a>
@@ -161,11 +171,59 @@
 
 		{#if !customDates}
 			<div class="flex gap-6 flex-wrap items-end">
-				<div>
+				<div style="position: relative;" class="period-dropdown">
 					<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">payment period</label>
-					<select bind:value={periodKey} class="hex-select" style="font-family: 'Courier', monospace; font-size: 0.9rem;">
-						{#each periods as p}<option value={p.key}>{p.label}</option>{/each}
-					</select>
+					<button
+						onclick={() => periodDropdownOpen = !periodDropdownOpen}
+						style="
+							font-family: 'Courier', monospace;
+							font-size: 0.9rem;
+							background: none;
+							border: none;
+							border-bottom: 1px dotted rgba(255,255,255,0.5);
+							color: white;
+							cursor: pointer;
+							padding: 0.3em 0;
+							padding-right: 1.4em;
+							text-align: left;
+							white-space: nowrap;
+							position: relative;
+						"
+					>
+						{periods.find(p => p.key === periodKey)?.label ?? ''}
+						<span style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: rgba(255,255,255,0.35);">{periodDropdownOpen ? '▲' : '▼'}</span>
+					</button>
+					{#if periodDropdownOpen}
+						<div style="
+							position: absolute;
+							top: 100%;
+							left: 0;
+							z-index: 50;
+							background: #0d0d0d;
+							border: 1px dotted rgba(255,255,255,0.2);
+							margin-top: 2px;
+							min-width: 100%;
+						">
+							{#each periods as p}
+								<button
+									onclick={() => selectPeriod(p.key)}
+									style="
+										display: block;
+										width: 100%;
+										text-align: left;
+										font-family: 'Courier', monospace;
+										font-size: 0.9rem;
+										padding: 0.35em 0.75em;
+										background: {p.key === periodKey ? 'rgba(255,255,255,0.07)' : 'none'};
+										color: {p.key === periodKey ? 'white' : 'rgba(255,255,255,0.55)'};
+										border: none;
+										cursor: pointer;
+										white-space: nowrap;
+									"
+								>{p.label}</button>
+							{/each}
+						</div>
+					{/if}
 				</div>
 				<div>
 					<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">invoice #</label>
