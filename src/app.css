@@ -20,6 +20,10 @@
 	--bg: #0d0d0d;
 }
 
+html {
+	font-size: 18px;
+}
+
 html, body {
 	background-color: var(--bg);
 	color: white;
