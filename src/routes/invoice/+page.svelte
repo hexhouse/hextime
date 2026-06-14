@@ -139,6 +139,8 @@
 <svelte:head>
 	<link rel="stylesheet" href="/assets/asciinema-player.css" />
 	<style>
+		.asciinema-player { background: #0d0d0d !important; }
+		.asciinema-player .asciinema-terminal { background: #0d0d0d !important; }
 		@media print {
 			.no-print { display: none !important; }
 			body { background: white !important; color: black !important; }
