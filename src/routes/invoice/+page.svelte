@@ -178,20 +178,19 @@
 						style="
 							font-family: 'Courier', monospace;
 							font-size: 0.9rem;
-							background: none;
-							border: none;
-							border-bottom: 1px dotted rgba(255,255,255,0.5);
-							color: white;
+							background: #a8a8a8;
+							color: #1a1a1a;
+							border: 2px outset #b0b0b0;
+							border-radius: 2px;
+							padding: 0.15em 2em 0.15em 0.7em;
 							cursor: pointer;
-							padding: 0.3em 0;
-							padding-right: 1.4em;
-							text-align: left;
 							white-space: nowrap;
 							position: relative;
+							box-shadow: inset 1px 1px 0px #d0d0d0, inset -1px -1px 0px #707070;
 						"
 					>
 						{periods.find(p => p.key === periodKey)?.label ?? ''}
-						<span style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: rgba(255,255,255,0.35);">{periodDropdownOpen ? '▲' : '▼'}</span>
+						<span style="position: absolute; right: 0.5em; top: 50%; transform: translateY(-50%); font-size: 0.65rem; color: #444;">{periodDropdownOpen ? '▲' : '▼'}</span>
 					</button>
 					{#if periodDropdownOpen}
 						<div style="
