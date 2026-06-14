@@ -21,6 +21,7 @@
 	let entryDate = $state(today());
 
 	let entries = $state([]);
+	let expandedPeriods = $state(new Set(['current']));
 
 	const projects = ['Space/Facilities/Infrastructure', 'Membership', 'Public Messaging', 'Events', 'Maintainer Meeting', 'Finance', 'Organizational Stewardship', 'Residency'];
 
@@ -570,11 +571,21 @@
 
 		<section class="mt-16">
 			{#each groupedByPeriod() as { period, entries: periodEntries, totalSecs: pTotal }, i}
-				<div class="mb-10">
-					<div class="flex items-baseline justify-between mb-4" style="border-bottom: 1px solid rgba(255,255,255,{i === 0 ? '0.12' : '0.06'}); padding-bottom: 0.5rem;">
+				{@const key = i === 0 ? 'current' : period.key}
+				{@const isOpen = expandedPeriods.has(key)}
+				<div class="mb-6">
+					<button
+						class="w-full text-left flex items-baseline justify-between pb-3"
+						style="border-bottom: 1px solid rgba(255,255,255,{i === 0 ? '0.12' : '0.06'}); background: none; border-top: none; border-left: none; border-right: none; cursor: pointer; margin-bottom: {isOpen ? '1rem' : '0'};"
+						onclick={() => { const s = new Set(expandedPeriods); s.has(key) ? s.delete(key) : s.add(key); expandedPeriods = s; }}
+					>
 						<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,{i === 0 ? '0.5' : '0.25'});">payment period: {period.label}</span>
-						<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,{i === 0 ? '0.4' : '0.2'});">{fmtDuration(pTotal)}</span>
-					</div>
+						<div class="flex items-baseline gap-3">
+							<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,{i === 0 ? '0.4' : '0.2'});">{fmtDuration(pTotal)}</span>
+							<span style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.2);">{isOpen ? '▲' : '▼'}</span>
+						</div>
+					</button>
+					{#if isOpen}
 					{#each periodEntries as entry}
 						{#if editingId === entry.id}
 							<div style="padding: 0.6rem 0; border-bottom: 1px dotted rgba(255,255,255,0.1);">
@@ -624,6 +635,7 @@
 							</div>
 						{/if}
 					{/each}
+					{/if}
 				</div>
 			{/each}
 		</section>
