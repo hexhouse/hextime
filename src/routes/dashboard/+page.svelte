@@ -568,7 +568,7 @@
 			</div>
 		</div>
 
-		<section class="mt-10">
+		<section class="mt-16">
 			{#each groupedByPeriod() as { period, entries: periodEntries, totalSecs: pTotal }, i}
 				<div class="mb-10">
 					<div class="flex items-baseline justify-between mb-4" style="border-bottom: 1px solid rgba(255,255,255,{i === 0 ? '0.12' : '0.06'}); padding-bottom: 0.5rem;">
