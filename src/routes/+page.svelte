@@ -1,10 +1,12 @@
 <script>
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
 	import { supabase } from '$lib/supabase.js';
 	import { goto } from '$app/navigation';
 
-	onMount(() => { document.documentElement.style.fontSize = '16px'; });
-	onDestroy(() => { document.documentElement.style.fontSize = ''; });
+	onMount(() => {
+		document.documentElement.style.fontSize = '16px';
+		return () => { document.documentElement.style.fontSize = ''; };
+	});
 
 	let email = $state('');
 	let password = $state('');
