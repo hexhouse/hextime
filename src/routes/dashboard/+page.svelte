@@ -355,7 +355,7 @@
 
 	<div class="max-w-lg mx-auto px-6 py-10">
 
-		<div class="journal mb-10">
+		<div class="journal mb-10" style="padding-left: 1.25rem; padding-bottom: 1.25rem;">
 
 		<section class="mb-12">
 			<div class="flex items-center mb-7">
@@ -447,7 +447,7 @@
 		<div class="mb-6">
 			<button
 				onclick={() => { showImport = !showImport; importDone = null; if (!showImport) { importStage = 'paste'; stagedEntries = []; importDate = today(); } }}
-				style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.25); background: none; border: none; cursor: pointer; padding: 0;"
+				style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.55); background: none; border: none; cursor: pointer; padding: 0;"
 			>{showImport ? '▲ close import' : '↓ import from notes'}</button>
 
 			{#if showImport}
@@ -456,11 +456,11 @@
 					{#if importStage === 'paste'}
 						<div class="flex items-end gap-6 flex-wrap">
 							<div>
-								<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.4);">date for all entries</label>
+								<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.6);">date for all entries</label>
 								<input type="date" bind:value={importDate} class="hex-input" style="width: 9rem; color-scheme: dark; font-family: 'Courier', monospace; font-size: 0.82rem;" />
 							</div>
 							<div>
-								<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.4);">time format</label>
+								<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.6);">time format</label>
 								<div style="display: inline-flex; border: 1px dotted rgba(255,255,255,0.2); font-family: 'Courier', monospace; font-size: 0.75rem;">
 									{#each [['hours', 'hours (1.5)'], ['hhmm', 'h:mm (1:30)'], ['minutes', 'minutes (90)']] as [val, label], i}
 										<button
@@ -476,10 +476,10 @@
 								bind:value={importText}
 								rows="10"
 								class="hex-input"
-								style="width: 100%; font-family: 'Courier', monospace; font-size: 0.82rem; resize: vertical; background: rgba(255,255,255,0.03); padding: 0.5rem;"
+								style="width: 100%; font-family: 'Courier', monospace; font-size: 0.82rem; resize: vertical; background: rgba(255,255,255,0.07); padding: 0.5rem;"
 							></textarea>
 							{#if !importText}
-								<div style="position: absolute; top: 0.5rem; left: 0.5rem; right: 0.5rem; pointer-events: none; white-space: pre-wrap; font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.28); line-height: 1.5;">{importPlaceholder}</div>
+								<div style="position: absolute; top: 0.5rem; left: 0.5rem; right: 0.5rem; pointer-events: none; white-space: pre-wrap; font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.42); line-height: 1.5;">{importPlaceholder}</div>
 							{/if}
 						</div>
 
