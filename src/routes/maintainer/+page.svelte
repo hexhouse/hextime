@@ -51,6 +51,7 @@
 	let slices = $state([]);
 	let totalSeconds = $state(0);
 	let maintainers = $state([]); // for byPerson view
+	let expandedMaintainers = $state(new Set());
 	let loading = $state(false);
 
 	$effect(() => {
@@ -103,7 +104,12 @@
 				byPerson[name].entries.push(e);
 				byPerson[name].totalSeconds += e.duration_seconds;
 			}
-			maintainers = Object.values(byPerson).sort((a, b) => b.totalSeconds - a.totalSeconds);
+			maintainers = Object.values(byPerson).sort((a, b) => {
+				const fa = a.name.trim().split(/\s+/)[0].toLowerCase();
+				const fb = b.name.trim().split(/\s+/)[0].toLowerCase();
+				return fa.localeCompare(fb);
+			});
+			expandedMaintainers = new Set();
 		}
 		loading = false;
 	}
@@ -207,25 +213,36 @@
 				<p style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.3);">no entries this period</p>
 			{:else}
 				{#each maintainers as m}
-					<div class="mb-8">
-						<div class="flex items-baseline justify-between mb-3" style="border-bottom: 1px dotted rgba(255,255,255,0.15); padding-bottom: 0.5rem;">
-							<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 1.1rem;">{m.name}</span>
-							<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.4);">{fmtDuration(m.totalSeconds)}</span>
-						</div>
-						{#each m.entries as entry}
-							<div class="flex items-baseline justify-between py-1.5" style="border-bottom: 1px dotted rgba(255,255,255,0.05);">
-								<div class="flex items-baseline gap-3" style="min-width: 0; flex: 1;">
-									{#if entry.project && PROJECT_COLORS[entry.project]}
-										<span style="width: 7px; height: 7px; border-radius: 50%; background: {PROJECT_COLORS[entry.project]}; display: inline-block; flex-shrink: 0; margin-bottom: 2px;"></span>
-									{/if}
-									<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 0.95rem; color: {entry.project && PROJECT_COLORS[entry.project] ? `color-mix(in srgb, ${PROJECT_COLORS[entry.project]} 55%, rgba(255,255,255,0.8))` : 'rgba(255,255,255,0.8)'}; overflow: hidden; text-overflow: ellipsis;">{entry.description || '—'}</span>
-								</div>
-								<div class="flex gap-3 flex-shrink-0 ml-3" style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.3);">
-									<span>{fmtDate(entry.entry_date)}</span>
-									<span>{fmtDuration(entry.duration_seconds)}</span>
-								</div>
+					{@const isOpen = expandedMaintainers.has(m.name)}
+					<div class="mb-2">
+						<button
+							onclick={() => { const s = new Set(expandedMaintainers); s.has(m.name) ? s.delete(m.name) : s.add(m.name); expandedMaintainers = s; }}
+							style="width: 100%; background: none; border: none; border-bottom: 1px dotted rgba(255,255,255,0.15); cursor: pointer; padding: 0.5rem 0; display: flex; align-items: baseline; justify-content: space-between;"
+						>
+							<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 1.1rem; color: white;">{m.name}</span>
+							<div class="flex items-baseline gap-3">
+								<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.4);">{fmtDuration(m.totalSeconds)}</span>
+								<span style="font-family: 'Courier', monospace; font-size: 0.7rem; color: rgba(255,255,255,0.25);">{isOpen ? '▲' : '▼'}</span>
 							</div>
-						{/each}
+						</button>
+						{#if isOpen}
+							<div class="mb-6 mt-1">
+								{#each m.entries as entry}
+									<div class="flex items-baseline justify-between py-1.5" style="border-bottom: 1px dotted rgba(255,255,255,0.05);">
+										<div class="flex items-baseline gap-3" style="min-width: 0; flex: 1;">
+											{#if entry.project && PROJECT_COLORS[entry.project]}
+												<span style="width: 7px; height: 7px; border-radius: 50%; background: {PROJECT_COLORS[entry.project]}; display: inline-block; flex-shrink: 0; margin-bottom: 2px;"></span>
+											{/if}
+											<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 0.95rem; color: {entry.project && PROJECT_COLORS[entry.project] ? `color-mix(in srgb, ${PROJECT_COLORS[entry.project]} 55%, rgba(255,255,255,0.8))` : 'rgba(255,255,255,0.8)'}; overflow: hidden; text-overflow: ellipsis;">{entry.description || '—'}</span>
+										</div>
+										<div class="flex gap-3 flex-shrink-0 ml-3" style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.3);">
+											<span>{fmtDate(entry.entry_date)}</span>
+											<span>{fmtDuration(entry.duration_seconds)}</span>
+										</div>
+									</div>
+								{/each}
+							</div>
+						{/if}
 					</div>
 				{/each}
 			{/if}
