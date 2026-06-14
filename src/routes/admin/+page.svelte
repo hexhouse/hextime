@@ -145,7 +145,6 @@
 
 	<div class="max-w-lg mx-auto px-6 py-10 space-y-12">
 
-		{#if !isLimitedAdmin}
 		<section>
 			<h2 style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.6rem; margin-bottom: 0.25rem;">hourly rates</h2>
 			<p class="mb-6" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.35);">
@@ -179,6 +178,7 @@
 								placeholder="—"
 								min="0"
 								step="0.01"
+								disabled={isLimitedAdmin}
 							/>
 							<span style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.3);">/hr</span>
 						</div>
@@ -221,6 +221,7 @@
 									placeholder="—"
 									min="0"
 									step="0.5"
+									disabled={isLimitedAdmin}
 								/>
 								<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3);">h</span>
 							</div>
@@ -229,7 +230,6 @@
 				</div>
 			{/each}
 		</section>
-		{/if}
 
 		<hr class="hex-divider" />
 
