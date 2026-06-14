@@ -35,21 +35,16 @@
 	const todayStr = new Date().toISOString().slice(0, 10);
 	const defaultPeriod = periods.find(p => todayStr >= p.start && todayStr <= p.end) ?? periods[0];
 
-	let fromPeriodKey = $state(defaultPeriod.key);
-	let throughPeriodKey = $state(defaultPeriod.key);
+	let periodKey = $state(defaultPeriod.key);
 	let customStart = $state(defaultPeriod.start);
 	let customEnd = $state(defaultPeriod.end);
 
 	let startDate = $derived(
-		customDates ? customStart : (periods.find(p => p.key === fromPeriodKey)?.start ?? '')
+		customDates ? customStart : (periods.find(p => p.key === periodKey)?.start ?? '')
 	);
-	let endDate = $derived.by(() => {
-		if (customDates) return customEnd;
-		const from = periods.find(p => p.key === fromPeriodKey);
-		const through = periods.find(p => p.key === throughPeriodKey);
-		if (!from || !through) return '';
-		return from.end > through.end ? from.end : through.end;
-	});
+	let endDate = $derived(
+		customDates ? customEnd : (periods.find(p => p.key === periodKey)?.end ?? '')
+	);
 
 	onMount(async () => {
 		if (!auth.session?.user) return;
@@ -165,14 +160,8 @@
 		{#if !customDates}
 			<div class="flex gap-6 flex-wrap items-end">
 				<div>
-					<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">from period</label>
-					<select bind:value={fromPeriodKey} class="hex-select" style="font-family: 'Courier', monospace; font-size: 0.9rem;">
-						{#each periods as p}<option value={p.key}>{p.label}</option>{/each}
-					</select>
-				</div>
-				<div>
-					<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">through period</label>
-					<select bind:value={throughPeriodKey} class="hex-select" style="font-family: 'Courier', monospace; font-size: 0.9rem;">
+					<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">payment period</label>
+					<select bind:value={periodKey} class="hex-select" style="font-family: 'Courier', monospace; font-size: 0.9rem;">
 						{#each periods as p}<option value={p.key}>{p.label}</option>{/each}
 					</select>
 				</div>
