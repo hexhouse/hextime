@@ -15,6 +15,20 @@
 	let paymentDetails = $state('');
 	let error = $state('');
 	let submitting = $state(false);
+	let passkeyStatus = $state('');
+	let enrollingPasskey = $state(false);
+
+	async function enrollPasskey() {
+		enrollingPasskey = true;
+		passkeyStatus = '';
+		const { error: err } = await supabase.auth.registerPasskey();
+		enrollingPasskey = false;
+		if (err) {
+			passkeyStatus = err.message;
+		} else {
+			passkeyStatus = '✓ passkey added';
+		}
+	}
 
 	onMount(async () => {
 		if (!auth.session?.user) return;
@@ -111,6 +125,21 @@
 					<input type="text" bind:value={paymentDetails} class="hex-input" placeholder="Venmo, Zelle, ACH, etc." />
 				</div>
 				{/if}
+			</section>
+
+			<hr class="hex-divider" />
+
+			<section class="space-y-3">
+				<h2 style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em;">Passkey</h2>
+				<p style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.35);">Add a passkey to sign in with Face ID or Touch ID instead of your password.</p>
+				<div class="flex items-center gap-4">
+					<button type="button" onclick={enrollPasskey} disabled={enrollingPasskey} class="btn-silver">
+						{enrollingPasskey ? '...' : 'add passkey'}
+					</button>
+					{#if passkeyStatus}
+						<span style="font-family: 'Courier', monospace; font-size: 0.9rem; color: {passkeyStatus.startsWith('✓') ? 'rgba(100,220,100,0.8)' : 'rgba(255,100,100,0.8)'};">{passkeyStatus}</span>
+					{/if}
+				</div>
 			</section>
 
 			{#if error}
