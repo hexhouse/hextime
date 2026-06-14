@@ -24,6 +24,17 @@
 
 	const projects = ['Space/Facilities/Infrastructure', 'Membership', 'Public Messaging', 'Events', 'Maintainer Meeting', 'Finance', 'Organizational Stewardship', 'Residency'];
 
+	const PROJECT_COLORS = {
+		'Space/Facilities/Infrastructure': '#7eb8d4',
+		'Membership':                      '#a8d8a8',
+		'Public Messaging':                '#f4a261',
+		'Events':                          '#e76f51',
+		'Maintainer Meeting':              '#c9b8f0',
+		'Finance':                         '#ffd166',
+		'Organizational Stewardship':      '#06d6a0',
+		'Residency':                       '#ef476f',
+	};
+
 	const importPlaceholder = `If you prefer, paste your notes here. One entry per line, with the time at the end:
 
 - toured Juniper .5
@@ -599,7 +610,7 @@
 						{:else}
 							<div class="flex items-baseline justify-between py-2" style="border-bottom: 1px dotted rgba(255,255,255,0.08);">
 								<div class="flex items-baseline gap-3 flex-wrap">
-									<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem; color: rgba(255,255,255,{i === 0 ? '1' : '0.65'});">{entry.description}</span>
+									<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem; color: {entry.project && PROJECT_COLORS[entry.project] ? `color-mix(in srgb, ${PROJECT_COLORS[entry.project]} 55%, rgba(255,255,255,${i === 0 ? '0.7' : '0.45'}))` : `rgba(255,255,255,${i === 0 ? '1' : '0.65'})`};">{entry.description}</span>
 									{#if entry.project}
 										<span style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.22);">{entry.project}</span>
 									{/if}
