@@ -355,7 +355,7 @@
 
 	<div class="max-w-lg mx-auto px-6 py-10">
 
-		<div class="journal mb-10" style="padding-left: 1.25rem; padding-right: 1.25rem; padding-bottom: 1.25rem;">
+		<div class="journal mb-10" style="padding: 1rem 1.25rem 1.25rem 1.25rem;">
 
 		<section class="mb-12">
 			<div class="flex items-center mb-7">
