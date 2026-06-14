@@ -429,7 +429,7 @@
 		<div class="mb-6">
 			<button
 				onclick={() => { showImport = !showImport; importDone = null; if (!showImport) { importStage = 'paste'; stagedEntries = []; importDate = today(); } }}
-				style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.25); background: none; border: none; cursor: pointer; padding: 0;"
+				style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.25); background: none; border: none; cursor: pointer; padding: 0;"
 			>{showImport ? '▲ close import' : '↓ import from notes'}</button>
 
 			{#if showImport}
@@ -622,14 +622,14 @@
 						{:else}
 							<div class="flex items-baseline justify-between py-2" style="border-bottom: 1px dotted rgba(255,255,255,0.08);">
 								<div class="flex items-baseline gap-3 flex-wrap">
-									<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem; color: {entry.project && PROJECT_COLORS[entry.project] ? `color-mix(in srgb, ${PROJECT_COLORS[entry.project]} 55%, rgba(255,255,255,${i === 0 ? '0.7' : '0.45'}))` : `rgba(255,255,255,${i === 0 ? '1' : '0.65'})`};">{entry.description}</span>
+									<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 1.1rem; color: {entry.project && PROJECT_COLORS[entry.project] ? `color-mix(in srgb, ${PROJECT_COLORS[entry.project]} 55%, rgba(255,255,255,${i === 0 ? '0.7' : '0.45'}))` : `rgba(255,255,255,${i === 0 ? '1' : '0.65'})`};">{entry.description}</span>
 									{#if entry.project}
 										<span style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.22);">{entry.project}</span>
 									{/if}
 								</div>
 								<div class="flex items-baseline gap-3" style="flex-shrink: 0; margin-left: 0.75rem;">
 									<span style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.2);">{fmtDate(entry.entry_date)}</span>
-									<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,{i === 0 ? '0.55' : '0.35'});">{fmtDuration(entry.duration_seconds)}</span>
+									<span style="font-family: 'Courier', monospace; font-size: 0.95rem; color: rgba(255,255,255,{i === 0 ? '0.55' : '0.35'});">{fmtDuration(entry.duration_seconds)}</span>
 									<button onclick={() => startEdit(entry)} style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.2); background: none; border: none; cursor: pointer; padding: 0;">edit</button>
 									<button onclick={() => deleteEntry(entry.id)} style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,100,100,0.25); background: none; border: none; cursor: pointer; padding: 0;">×</button>
 								</div>
