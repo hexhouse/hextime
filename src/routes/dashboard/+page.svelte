@@ -324,6 +324,14 @@
 	}
 </script>
 
+<style>
+	.journal {
+		border-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAB5klEQVRYR+1Zy5aDIAytrmX8/8+0djt2QvGBkZgEg9pzxlWLkFxuXhCrB3qca9947Pj/AUTUixj4WcOQH+37rpLI30xyzgHQ+iPWC9p//J62elKjlDw1UIpJqSBuS1LLUfpmOtZAF1OdAjQyAQl0AjhN8P/9utfoO/i9ljlqfkpvau6Eq6IWzMBbCC4g2JrZLKB7DJ7NaGzZBwDrXyEr8IyO6eosRldAo/TFArXySSynAQI8VRQwbMnLgLKxgSxJpCf74KHyqJjRSQBO+NY+aQZ0AfwDsVaZp6MCQMOh5LaMnl3rGygkVVRIuOAig2kyVSlmOWDq9HRpZdIkfOfKBJcJo1eenrJL6NeYvlStT5v+DWnx+QlwdTCVBKo5Xv7Xes4S2itQ4rp88xKKT1GlKhKlh8urW0YbYBRG7w+00B1JdszbSU+cAC4oct9/dTDV0EDo+j6d8KU9oS1zqEOXSa36zkTdnTL1i5dlAz07Ta30QW+y70JnJPjwANknuALZRG1hoqbRKqaQmKjOo3iHgm4uUk35brrpi3GT51GKCcsWeei1D2C+qD1OKFYDpXznqIml6zfnUW5hqRO+Vi/7RcLSBWJw3gl+96J5nDx3nKU74+aZvo8+oYiBmgI4IIw1/QHZpkv/AKhgd0nbK4EFAAAAAElFTkSuQmCC') 14 / 14px / 0 round;
+		border-width: 14px;
+		border-style: solid;
+	}
+</style>
+
 <div class="min-h-screen bg-[#060606] text-white">
 
 	<nav class="px-6 py-4 flex items-center justify-between" style="border-bottom: 1px dotted rgba(255,255,255,0.2);">
@@ -338,6 +346,8 @@
 	</nav>
 
 	<div class="max-w-lg mx-auto px-6 py-10">
+
+		<div class="journal mb-10">
 
 		<section class="mb-12">
 			<div class="flex items-center mb-7">
@@ -542,6 +552,8 @@
 				</div>
 			{/if}
 		</div>
+
+		</div><!-- end .journal -->
 
 		<!-- Billing period summary -->
 		<div class="mt-20 mb-6 px-3 py-3" style="border: 1px dotted rgba(255,255,255,0.1);">
