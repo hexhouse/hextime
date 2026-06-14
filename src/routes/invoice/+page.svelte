@@ -139,8 +139,8 @@
 <svelte:head>
 	<link rel="stylesheet" href="/assets/asciinema-player.css" />
 	<style>
-		.asciinema-player { background: #0d0d0d !important; }
-		.asciinema-player .asciinema-terminal { background: #0d0d0d !important; }
+		.asciinema-player { background: #000000 !important; }
+		.asciinema-player .asciinema-terminal { background: #000000 !important; }
 		@media print {
 			.no-print { display: none !important; }
 			body { background: white !important; color: black !important; }
@@ -150,7 +150,7 @@
 </svelte:head>
 
 <!-- Setup UI -->
-<div class="no-print min-h-screen bg-[#0d0d0d] text-white" style="font-family: 'Diolce-Regular', sans-serif;">
+<div class="no-print min-h-screen bg-[#000000] text-white" style="font-family: 'Diolce-Regular', sans-serif;">
 	<nav class="px-6 py-4 flex items-center justify-between" style="border-bottom: 1px dotted rgba(255,255,255,0.25);">
 		<span style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.1rem;">hex time</span>
 		<a href="/dashboard" class="text-xs" style="color: rgba(255,255,255,0.45); font-family: 'Courier', monospace;">← dashboard</a>
@@ -297,10 +297,10 @@
 				<svg style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true">
 					<defs>
 						<filter id="invoice-noise" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
-							<feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="4" stitchTiles="stitch" result="noise"/>
+							<feTurbulence type="fractalNoise" baseFrequency="0.88" numOctaves="4" stitchTiles="stitch" result="noise"/>
 							<feColorMatrix type="saturate" values="0" in="noise" result="mono"/>
 							<feComponentTransfer in="mono" result="boosted">
-								<feFuncA type="linear" slope="1.8"/>
+								<feFuncA type="linear" slope="5"/>
 							</feComponentTransfer>
 							<feBlend in="SourceGraphic" in2="boosted" mode="hard-light" result="blended"/>
 							<feComposite in="blended" in2="SourceGraphic" operator="in"/>
@@ -314,14 +314,14 @@
 					style="
 						display: inline-block;
 						padding: 0.45em 1em;
-						background: #2d005a;
-						color: rgba(220, 170, 255, 0.95);
+						background: #1a1028;
+						color: rgba(195, 175, 215, 0.9);
 						font-family: 'Courier', monospace;
 						font-size: 1rem;
 						text-decoration: none;
-						border: 1px solid rgba(160, 60, 255, 0.35);
+						border: 1px solid rgba(140, 110, 180, 0.3);
 						border-radius: 2px;
-						filter: url(#invoice-noise) drop-shadow(0 0 6px rgba(180, 40, 255, 0.9)) drop-shadow(0 0 22px rgba(140, 0, 230, 0.65)) drop-shadow(0 0 45px rgba(100, 0, 180, 0.4));
+						filter: url(#invoice-noise) drop-shadow(0 0 5px rgba(140, 80, 200, 0.7)) drop-shadow(0 0 18px rgba(100, 50, 160, 0.5)) drop-shadow(0 0 40px rgba(80, 30, 130, 0.35));
 					"
 				>→ Hex ☄︎ Invoice & Reimbursement ☄︎ Submission Form</a>
 			</div>
