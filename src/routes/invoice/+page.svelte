@@ -198,7 +198,7 @@
 							top: 100%;
 							left: 0;
 							z-index: 50;
-							background: #0d0d0d;
+							background: #060606;
 							border: 1px dotted rgba(255,255,255,0.2);
 							margin-top: 2px;
 							min-width: 100%;
@@ -372,13 +372,13 @@
 						display: inline-block;
 						padding: 0.45em 1em;
 						background: #1e0a16;
-						color: rgba(255, 180, 220, 0.92);
+						color: rgba(255, 255, 255, 0.92);
 						font-family: 'Courier', monospace;
 						font-size: 1rem;
 						text-decoration: none;
-						border: 1px solid rgba(210, 80, 150, 0.3);
+						border: 1px solid #0011ff;
 						border-radius: 2px;
-						filter: url(#invoice-noise) drop-shadow(0 0 6px rgba(220, 60, 150, 0.75)) drop-shadow(0 0 20px rgba(180, 30, 110, 0.55)) drop-shadow(0 0 45px rgba(140, 10, 80, 0.4));
+						filter: url(#invoice-noise) drop-shadow(0 0 6px rgba(190, 160, 150, 0.75)) drop-shadow(0 0 20px rgba(180, 30, 110, 0.55)) drop-shadow(0 0 45px rgba(0, 10, 180, 0.4));
 					"
 				>→ Hex ☄︎ Invoice & Reimbursement ☄︎ Submission Form</a>
 			</div>

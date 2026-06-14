@@ -324,7 +324,7 @@
 	}
 </script>
 
-<div class="min-h-screen bg-[#0d0d0d] text-white">
+<div class="min-h-screen bg-[#060606] text-white">
 
 	<nav class="px-6 py-4 flex items-center justify-between" style="border-bottom: 1px dotted rgba(255,255,255,0.2);">
 		<span style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.1rem;">hex time</span>

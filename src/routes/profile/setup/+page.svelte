@@ -92,7 +92,7 @@
 	}
 </script>
 
-<div class="min-h-screen bg-[#0d0d0d] px-6 py-12">
+<div class="min-h-screen bg-[#060606] px-6 py-12">
 	<div class="max-w-md mx-auto">
 
 		<a href="/dashboard" style="font-family: 'Courier', monospace; font-size: 0.9rem; color: rgba(255,255,255,0.35); text-decoration: none; display: inline-block; margin-bottom: 1.5rem;">← dashboard</a>
