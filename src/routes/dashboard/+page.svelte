@@ -579,7 +579,7 @@
 						style="border-bottom: 1px solid rgba(255,255,255,{i === 0 ? '0.12' : '0.06'}); background: none; border-top: none; border-left: none; border-right: none; cursor: pointer; margin-bottom: {isOpen ? '1rem' : '0'};"
 						onclick={() => { const s = new Set(expandedPeriods); s.has(key) ? s.delete(key) : s.add(key); expandedPeriods = s; }}
 					>
-						<span style="font-family: 'Courier', monospace; font-size: 0.82rem; font-weight: bold; color: rgba(255,255,255,{i === 0 ? '0.5' : '0.25'});">payment period: {period.label}</span>
+						<span style="font-family: 'Skanaus-Display', sans-serif; font-size: 1rem; color: rgba(255,255,255,{i === 0 ? '0.55' : '0.25'});">payment period: {period.label}</span>
 						<div class="flex items-baseline gap-3">
 							<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,{i === 0 ? '0.4' : '0.2'});">{fmtDuration(pTotal)}</span>
 							{#if !isOpen}<span style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.18);">{periodEntries.length} {periodEntries.length === 1 ? 'entry' : 'entries'}</span>{/if}
