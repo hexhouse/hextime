@@ -168,19 +168,22 @@
 					<div class="flex items-center justify-between py-3" style="border-bottom: 1px dotted rgba(255,255,255,0.12);">
 						<span style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.6);">{quarterLabels[q]}</span>
 						<div class="flex items-baseline gap-1">
-							<span style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">$</span>
-							<input
-								type="number"
-								value={rates[key] ?? ''}
-								onchange={(e) => saveRate(key, e.target.value)}
-								class="hex-input text-right"
-								style="width: 5rem; font-family: 'Courier', monospace;"
-								placeholder="—"
-								min="0"
-								step="0.01"
-								disabled={isLimitedAdmin}
-							/>
-							<span style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.3);">/hr</span>
+							{#if isLimitedAdmin}
+								<span style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.7);">{rates[key] != null ? `$${rates[key]}/hr` : '—'}</span>
+							{:else}
+								<span style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">$</span>
+								<input
+									type="number"
+									value={rates[key] ?? ''}
+									onchange={(e) => saveRate(key, e.target.value)}
+									class="hex-input text-right"
+									style="width: 5rem; font-family: 'Courier', monospace;"
+									placeholder="—"
+									min="0"
+									step="0.01"
+								/>
+								<span style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.3);">/hr</span>
+							{/if}
 						</div>
 					</div>
 				{/each}
@@ -212,18 +215,21 @@
 							{@const key = `${p.id}::${ratesYear}-Q${q}`}
 							<div class="flex items-baseline gap-1">
 								<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.35);">Q{q}</span>
-								<input
-									type="number"
-									value={caps[key] ?? ''}
-									onchange={(e) => saveCap(p.id, ratesYear, q, e.target.value)}
-									class="hex-input text-right"
-									style="width: 3.5rem; font-family: 'Courier', monospace; font-size: 0.9rem;"
-									placeholder="—"
-									min="0"
-									step="0.5"
-									disabled={isLimitedAdmin}
-								/>
-								<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3);">h</span>
+								{#if isLimitedAdmin}
+									<span style="font-family: 'Courier', monospace; font-size: 0.9rem; color: rgba(255,255,255,0.7);">{caps[key] != null ? `${caps[key]}h` : '—'}</span>
+								{:else}
+									<input
+										type="number"
+										value={caps[key] ?? ''}
+										onchange={(e) => saveCap(p.id, ratesYear, q, e.target.value)}
+										class="hex-input text-right"
+										style="width: 3.5rem; font-family: 'Courier', monospace; font-size: 0.9rem;"
+										placeholder="—"
+										min="0"
+										step="0.5"
+									/>
+									<span style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3);">h</span>
+								{/if}
 							</div>
 						{/each}
 					</div>
