@@ -591,7 +591,7 @@
 
 		<section class="mt-16">
 			{#each groupedByPeriod() as { period, entries: periodEntries, totalSecs: pTotal }, i}
-				{@const key = i === 0 ? 'current' : period.key}
+				{@const key = i === 0 ? 'current' : period.start}
 				{@const isOpen = expandedPeriods.has(key)}
 				<div class="mb-6">
 					<button
