@@ -180,9 +180,9 @@
 				<div style="margin-top: 0.75rem; font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.38); line-height: 1.7; max-width: 38rem; border-left: 1px dotted rgba(255,255,255,0.12); padding-left: 1rem;">
 					<p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: rgba(255,255,255,0.5); letter-spacing: 0.04em;">Invoicing, rates, and hourly caps</p>
 					<p style="margin: 0 0 0.75rem 0;">Invoices are processed weekly and paid on Wednesdays.</p>
-					<p style="margin: 0 0 0.75rem 0;">Maintainers may submit invoices for hours worked within payment periods. Invoices can be submitted within 3 months after any given payment period ends.</p>
-					<p style="margin: 0 0 0.75rem 0;">Hourly rates and monthly caps are reviewed quarterly. Payment periods run from the 15th to the 14th so that payments can go out before the beginning of the month, when rent, bills, and studio dues often come due. This is meant to make the system easier to plan around.</p>
-					<p style="margin: 0 0 0.75rem 0;">Hex House calculates rates and caps based on core operating revenue from the previous budget quarter. For this system, that means recurring or earned revenue like membership, events, and supporters on pools.</p>
+					<p style="margin: 0 0 0.75rem 0;">Maintainers may submit invoices for hours worked within payment periods. Invoices submitted within 3 months after any given payment period ends will be processed.</p>
+					<p style="margin: 0 0 0.75rem 0;">Hourly rates and monthly caps are reviewed quarterly. Payment periods run from the 15th to the 14th so that payments can go out before the beginning of the month, when rent and studio dues are often due. This is meant to make things easier to plan around.</p>
+					<p style="margin: 0 0 0.75rem 0;">Hex House calculates rates and caps based on core operating revenue from the previous budget quarter. For this system, that means recurring or earned revenue like membership, events, and monthly supporters on Pools/withfriends.</p>
 					<p style="margin: 0;">Caps represent the maximum number of hours Hex can compensate each maintainer for within a month. We want everyone to feel confident that the work they do for Hex is recognized and paid: if you work hours within your cap and invoice them, you will be paid for that work.</p>
 				</div>
 			{/if}
