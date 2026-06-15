@@ -167,7 +167,8 @@
 		<a href="/dashboard" class="text-xs" style="color: rgba(255,255,255,0.45); font-family: 'Courier', monospace;">← dashboard</a>
 	</nav>
 
-	<div class="max-w-lg mx-auto px-6 py-10 space-y-8">
+	<div class="max-w-lg mx-auto px-6 py-10 space-y-8" style="position: relative; margin-top: 2rem;">
+		<div style="position: absolute; inset: -14px; border-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAYAAADFw8lbAAAAsklEQVR4AezX0QqAIAwF0Ord//9QP6CeLkiy5ugStN1AFk5Hnvbisf3kqfehrbVzHOwfVUcUir33fRyYZ8nmE4XQPUJsdd5ahzpWzCeKk459+PTurUd+NeYV9QTQg9D21q/m64qyJSFeVxQC7ChRibIF2PXUoxJlC7DrpetRNlC4nkTDZM4GiTpA4bREw2TOhryiuGW+jQ7glM4nitslO050xkQ+UeOgn01LlE0t0bKiFwAAAP//JXtcRgAAAAZJREFUAwCp7LhVEeSV7gAAAABJRU5ErkJggg==') 14 / 14px / 0 round; border-width: 14px; border-style: solid; filter: invert(1); pointer-events: none; z-index: 0;"></div>
 		<div>
 			<div style="display: flex; align-items: baseline; gap: 0.75rem;">
 				<h2 style="font-family: 'Skanaus-Display', sans-serif; font-size: 1.6rem;">generate invoice</h2>
@@ -267,7 +268,7 @@
 		<button
 			onclick={() => customDates = !customDates}
 			style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.45); background: none; border: none; cursor: pointer; padding: 0; margin-top: -1rem;"
-		>{customDates ? '← back to payment periods' : 'custom date range'}</button>
+		>{customDates ? '← back to payment periods' : '↑ custom date range'}</button>
 
 		<div>
 			<label class="block mb-1" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.4);">notes (optional)</label>
@@ -367,44 +368,45 @@
 			{#if hasUnratedEntries}
 				<p class="mt-2" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.35);">enter a rate above to continue</p>
 			{/if}
+			<div style="padding-bottom: 0.75rem;"></div>
 
-			<div class="mt-8">
-				<p style="font-family: 'Courier', monospace; font-size: 0.85rem; color: rgba(255,255,255,0.3); margin-bottom: 0.6rem;">then →</p>
-				<svg style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true">
-					<defs>
-						<filter id="invoice-noise" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
-							<feTurbulence type="fractalNoise" baseFrequency="0.92" numOctaves="6" stitchTiles="stitch" result="noise"/>
-							<feColorMatrix type="saturate" values="0" in="noise" result="mono"/>
-							<feComponentTransfer in="mono" result="boosted">
-								<feFuncA type="linear" slope="15"/>
-							</feComponentTransfer>
-							<feBlend in="SourceGraphic" in2="boosted" mode="hard-light" result="blended"/>
-							<feComposite in="blended" in2="SourceGraphic" operator="in"/>
-						</filter>
-					</defs>
-				</svg>
-				<a
-					href="https://docs.google.com/forms/d/e/1FAIpQLSfyonxuZUjctSkVuyfsFe9Mnq5Ot9oDY2DHeI1UcUwfC3g00A/viewform?usp=header"
-					target="_blank"
-					rel="noopener noreferrer"
-					style="
-						display: inline-block;
-						padding: 0.45em 1em;
-						background: #1e0a16;
-						color: rgba(255, 255, 255, 0.92);
-						font-family: 'Courier', monospace;
-						font-size: 1rem;
-						text-decoration: none;
-						border: 1px solid #0011ff;
-						border-radius: 2px;
-						filter: url(#invoice-noise) drop-shadow(0 0 6px rgba(190, 160, 150, 0.75)) drop-shadow(0 0 20px rgba(180, 30, 110, 0.55)) drop-shadow(0 0 45px rgba(0, 10, 180, 0.4));
-					"
-				>Hex ☄︎ Invoice &amp; Reimbursement ☄︎ <em>Submission&nbsp;Form</em></a>
-			</div>
-
-			<div id="invoice-hourglass" style="width: 430px; margin-left: auto; margin-right: auto; margin-top: 80px;"></div>
 		{/if}
 	</div>
+	<div id="invoice-hourglass" style="width: 430px; margin-left: auto; margin-right: auto; margin-top: 80px;"></div>
+</div>
+
+<!-- Submission form link — fixed bottom right -->
+<div class="no-print" style="position: fixed; bottom: 1.25rem; right: 1.25rem; z-index: 100;">
+	<svg style="position:absolute;width:0;height:0;overflow:hidden;" aria-hidden="true">
+		<defs>
+			<filter id="invoice-noise" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+				<feTurbulence type="fractalNoise" baseFrequency="0.92" numOctaves="6" stitchTiles="stitch" result="noise"/>
+				<feColorMatrix type="saturate" values="0" in="noise" result="mono"/>
+				<feComponentTransfer in="mono" result="boosted">
+					<feFuncA type="linear" slope="15"/>
+				</feComponentTransfer>
+				<feBlend in="SourceGraphic" in2="boosted" mode="hard-light" result="blended"/>
+				<feComposite in="blended" in2="SourceGraphic" operator="in"/>
+			</filter>
+		</defs>
+	</svg>
+	<a
+		href="https://docs.google.com/forms/d/e/1FAIpQLSfyonxuZUjctSkVuyfsFe9Mnq5Ot9oDY2DHeI1UcUwfC3g00A/viewform?usp=header"
+		target="_blank"
+		rel="noopener noreferrer"
+		style="
+			display: inline-block;
+			padding: 0.3em 0.65em;
+			background: #1e0a16;
+			color: rgba(255, 255, 255, 0.85);
+			font-family: 'Courier', monospace;
+			font-size: 0.72rem;
+			text-decoration: none;
+			border: 1px solid #0011ff;
+			border-radius: 2px;
+			filter: url(#invoice-noise) drop-shadow(0 0 4px rgba(190, 160, 150, 0.6)) drop-shadow(0 0 14px rgba(180, 30, 110, 0.45)) drop-shadow(0 0 30px rgba(0, 10, 180, 0.35));
+		"
+	>Hex ☄︎ Invoice &amp; Reimbursement ☄︎ <em>Submission&nbsp;Form</em> <span style="font-size: 0.95em; vertical-align: super;">↗</span></a>
 </div>
 
 <!-- Print-only invoice -->

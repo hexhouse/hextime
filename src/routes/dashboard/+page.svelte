@@ -36,7 +36,8 @@
 		'Residency':                       '#ef476f',
 	};
 
-	const importPlaceholder = `If you prefer, paste your notes here. One entry per line, with the time at the end:
+	const importPlaceholder = `You can paste a dashed list of lines here, one entry per line with the time in your preferred format at the end.
+Example:
 
 - toured Juniper .5
 - onboarded Juniper 1
@@ -266,7 +267,7 @@
 		return Math.round(bare * 3600);
 	}
 
-	const parsedImport = $derived(() => {
+	const parsedImport = $derived.by(() => {
 		const results = [];
 		const skipped = [];
 		for (const raw of importText.split('\n')) {
@@ -297,7 +298,7 @@
 	}
 
 	function stageForCategorization() {
-		const { results } = parsedImport();
+		const { results } = parsedImport;
 		stagedEntries = results.map(e => ({ ...e, project: guessProject(e.description) }));
 		importStage = 'categorize';
 	}
@@ -474,6 +475,7 @@
 						<div style="position: relative;">
 							<textarea
 								bind:value={importText}
+								oninput={() => { if (importDone != null) importDone = null; }}
 								rows="10"
 								class="hex-input"
 								style="width: 100%; font-family: 'Courier', monospace; font-size: 0.82rem; resize: vertical; background: rgba(255,255,255,0.07); padding: 0.5rem;"
@@ -483,23 +485,27 @@
 							{/if}
 						</div>
 
-						{#if parsedImport().results.length > 0}
+						{#if parsedImport.results.length > 0}
 							<div class="flex items-center gap-4">
 								<p style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.35);">
-									{parsedImport().results.length} entries detected
+									{parsedImport.results.length} entries detected
 								</p>
 								<button class="btn-silver" onclick={stageForCategorization} style="font-size: 0.82rem;">
 									categorize →
 								</button>
 							</div>
+						{:else if importText.trim() && parsedImport.skipped.length === 0}
+							<p style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3);">
+								put the time at the end of each line — e.g. <code style="color: rgba(255,255,255,0.5);">toured the space 1</code>
+							</p>
 						{/if}
 
-						{#if parsedImport().skipped.length > 0}
+						{#if parsedImport.skipped.length > 0}
 							<div>
 								<p style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,150,100,0.6); margin-bottom: 0.3rem;">
-									{parsedImport().skipped.length} lines skipped (no hours found):
+									{parsedImport.skipped.length} lines skipped (no hours found):
 								</p>
-								{#each parsedImport().skipped as s}
+								{#each parsedImport.skipped as s}
 									<div style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,150,100,0.4); padding: 0.1rem 0;">— {s}</div>
 								{/each}
 							</div>

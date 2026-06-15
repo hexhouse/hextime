@@ -92,6 +92,7 @@
 	}
 </script>
 
+
 <div class="min-h-screen bg-[#060606] px-6 py-12">
 	<div class="max-w-md mx-auto">
 
@@ -101,6 +102,8 @@
 		<p class="mb-2" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.5);">Fill this out once. It will appear on every invoice you generate.</p>
 		<hr class="hex-divider my-6" />
 
+		<div style="position: relative; padding: 1rem 1.25rem 1.25rem 1.25rem;">
+			<div style="position: absolute; inset: -28px; border-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFQAAABUCAYAAAAcaxDBAAAAAXNSR0IArs4c6QAAAqhJREFUeF7tnLFxAzEMBF+FuAmH7n8cugkVYqcWP9jZAUg9pXMKiCCXBxB8vXU75N/X58fv/498/9xvcgjlbuNZ/3Ey1c9rGNWAiuZxHDae9Q9QyIgABclaQNY/Cr1YzR435OVqqK3RUWgUWtNMtSba6NV4mPIUgOzdC7p6vACFi4rdwAAN0N6rLymQ7Ke2afzA6GDv6jQe1dTd490IwO4LXL2BASr7WhJggHYDpZSgokx2Gt9e/a4eL21T2qaLt02UkpRiZKfx3y7l7YItQPLv3rDZ8bCGBqj7EjJAB8VUMyJAdwdqFWD9qUaSvRpvuULthK0/ASN7NV6AJuXdqUuK7O5iTg9H6HFdNSXsAqv+dr7WHx8wB2jtahuFdtdQK3HrX03Z6uftfK3/KeXthKsBbbzV/tX1LW+bVgOy8QLUEgP/AN0NKO0Y2ZvX2z4czZ/s+lCiAcneTqB5QJo/2QNU9p0BKhVMwMiOV8/Rga6i9HChOp7kc3IfgVTnQ+Mtf3PEblCADi8OVBURoO8OlBRARZnsNP6z7TR/sqdtSts0V8OkQLJHoc9WKPWZq9uguXr1/06uFRqg7lvWPGCWJYAyJEB3A2pPSVLAbLud7+g/XaF2grOB0fh2vgEKRAOUJCftlwcq14PPM6nvtUC628LpNTRAm2tMgAZo6afoXi7lV2fEdnf56iFjAVfjRaG7XT2tQrrbGBt/ukIpANm7F3T1eJjytACyB6isKQH6CCwK7f5FB3pXh+7OdIjYlN893vJ3mwhwgELNJYCjPUAD9IFADqXuQ4lSktoistP4dKiNJeDq8aLQKLT238KzMwIVaidgU5z8u1N8drwAlVdt2pAADVD3NhwpqrukLVeorYnW3wIMUPmLtBZwdQOj0N1rqFWA9beK7E75P2RHGSAMwooVAAAAAElFTkSuQmCC') 28 / 28px / 0 round; border-width: 28px; border-style: solid; filter: brightness(0) invert(1); pointer-events: none; z-index: 0;"></div>
 		<form class="space-y-8" onsubmit={(e) => { e.preventDefault(); save(); }}>
 
 			<section class="space-y-5">
@@ -179,5 +182,6 @@
 			</div>
 
 		</form>
+		</div>
 	</div>
 </div>
