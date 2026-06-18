@@ -25,7 +25,7 @@
 	let entries = $state([]);
 	let expandedPeriods = $state(new Set(['current']));
 
-	const projects = ['Space/Facilities/Infrastructure', 'Membership', 'Public Messaging', 'Events', 'Maintainer Meeting', 'Finance', 'Organizational Stewardship', 'Residency'];
+	const projects = ['Space/Facilities/Infrastructure', 'Membership', 'Public Messaging', 'Events', 'Maintainer Meeting', 'Finance', 'Organizational Stewardship', 'Residency', 'Other'];
 
 	const PROJECT_COLORS = {
 		'Space/Facilities/Infrastructure': '#7eb8d4',
