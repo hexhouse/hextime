@@ -6,6 +6,8 @@
 
 	let mode = $state('manual');
 	let running = $state(false);
+	let paused = $state(false);
+	let reviewing = $state(false);
 	let startTime = $state(null);
 	let elapsed = $state(0);
 	let timerInterval = null;
@@ -84,16 +86,30 @@ Example:
 		}
 	});
 
-	function toggleTimer() {
-		if (running) {
-			if (elapsed > 0) saveEntry(description || 'Untitled', project || 'Other', elapsed, today());
-			clearInterval(timerInterval);
-			elapsed = 0; startTime = null; description = ''; project = '';
-		} else {
-			startTime = Date.now();
-			timerInterval = setInterval(() => { elapsed = Math.floor((Date.now() - startTime) / 1000); }, 1000);
-		}
-		running = !running;
+	function startTimer() {
+		startTime = Date.now() - elapsed * 1000;
+		timerInterval = setInterval(() => { elapsed = Math.floor((Date.now() - startTime) / 1000); }, 1000);
+		running = true; paused = false; reviewing = false;
+	}
+
+	function pauseTimer() {
+		clearInterval(timerInterval);
+		running = false; paused = true;
+	}
+
+	function stopTimer() {
+		clearInterval(timerInterval);
+		running = false; paused = false; reviewing = true;
+	}
+
+	async function confirmSave() {
+		await saveEntry(description || 'Untitled', project || 'Other', elapsed, today());
+		resetTimer();
+	}
+
+	function resetTimer() {
+		elapsed = 0; startTime = null; description = ''; project = '';
+		running = false; paused = false; reviewing = false;
 	}
 
 	async function logManual() {
@@ -162,7 +178,7 @@ Example:
 	}
 
 	const todayTotal = $derived(
-		entries.filter(e => e.entry_date === today()).reduce((s, e) => s + e.duration_seconds, 0) + (running ? elapsed : 0)
+		entries.filter(e => e.entry_date === today()).reduce((s, e) => s + e.duration_seconds, 0) + elapsed
 	);
 
 	function currentBillingPeriod() {
@@ -183,7 +199,7 @@ Example:
 
 	const periodTotalSecs = $derived(
 		entries.filter(e => e.entry_date >= billingPeriod.start && e.entry_date <= billingPeriod.end)
-			.reduce((s, e) => s + e.duration_seconds, 0) + (running ? elapsed : 0)
+			.reduce((s, e) => s + e.duration_seconds, 0) + elapsed
 	);
 	const periodCapHours = $derived(
 		auth.session?.user?.id ? getCapForDate(auth.session.user.id, billingPeriod.start) : null
@@ -363,7 +379,7 @@ Example:
 			<div class="flex items-center mb-7">
 				<div style="display: inline-flex; border: 1px dotted rgba(255,255,255,0.25); font-family: 'Courier', monospace; font-size: 1rem;">
 					<button
-						onclick={() => { mode = 'manual'; if (running) toggleTimer(); }}
+						onclick={() => { mode = 'manual'; if (running) stopTimer(); }}
 						style="padding: 0.25em 0.8em; background: {mode === 'manual' ? 'rgba(255,255,255,0.12)' : 'none'}; color: {mode === 'manual' ? 'white' : 'rgba(255,255,255,0.35)'}; border: none; cursor: pointer;"
 					>log time</button>
 					<button
@@ -425,22 +441,59 @@ Example:
 			{:else}
 				<div class="space-y-5">
 					<div class="py-3 text-center">
-						<span style="font-family: 'Courier', monospace; font-size: 3.5rem; letter-spacing: 0.06em;">{fmt(elapsed)}</span>
+						<span style="font-family: 'Courier', monospace; font-size: 3.5rem; letter-spacing: 0.06em; color: {paused ? 'rgba(255,255,255,0.4)' : 'white'};">{fmt(elapsed)}</span>
+						{#if paused}<span style="font-family: 'Courier', monospace; font-size: 0.8rem; color: rgba(255,255,255,0.3); display: block; margin-top: 0.25rem;">paused</span>{/if}
 					</div>
 					<div>
-						<input type="text" bind:value={description} disabled={running} class="hex-input" style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem;" placeholder="work description..." />
+						<input type="text" bind:value={description} class="hex-input" style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem;" placeholder="work description..." />
 					</div>
 					<div>
 						<label class="block mb-1" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">project</label>
-						<select bind:value={project} disabled={running} class="hex-select">
+						<select bind:value={project} class="hex-select">
 							<option value="">—</option>
 							{#each projects as p}<option value={p}>{p}</option>{/each}
 						</select>
 					</div>
-					<button
-						onclick={toggleTimer}
-						style="background: none; border: 1px dotted {running ? 'rgba(255,100,100,0.5)' : 'rgba(255,255,255,0.4)'}; color: {running ? 'rgba(255,120,120,0.9)' : 'white'}; font-family: 'Courier', monospace; padding: 0.3em 0.9em; cursor: pointer;"
-					>{running ? '■ stop' : '▶ start'}</button>
+
+					{#if reviewing}
+						<div class="flex gap-3 items-center">
+							<button
+								onclick={confirmSave}
+								style="background: none; border: 1px dotted rgba(255,255,255,0.4); color: white; font-family: 'Courier', monospace; padding: 0.3em 0.9em; cursor: pointer;"
+							>+ save to log</button>
+							<button
+								onclick={resetTimer}
+								style="background: none; border: none; color: rgba(255,255,255,0.3); font-family: 'Courier', monospace; padding: 0.3em 0; cursor: pointer;"
+							>discard</button>
+						</div>
+					{:else if running}
+						<div class="flex gap-3">
+							<button
+								onclick={pauseTimer}
+								style="background: none; border: 1px dotted rgba(255,200,100,0.5); color: rgba(255,200,100,0.9); font-family: 'Courier', monospace; padding: 0.3em 0.9em; cursor: pointer;"
+							>⏸ pause</button>
+							<button
+								onclick={stopTimer}
+								style="background: none; border: 1px dotted rgba(255,100,100,0.5); color: rgba(255,120,120,0.9); font-family: 'Courier', monospace; padding: 0.3em 0.9em; cursor: pointer;"
+							>■ stop</button>
+						</div>
+					{:else if paused}
+						<div class="flex gap-3">
+							<button
+								onclick={startTimer}
+								style="background: none; border: 1px dotted rgba(255,255,255,0.4); color: white; font-family: 'Courier', monospace; padding: 0.3em 0.9em; cursor: pointer;"
+							>▶ resume</button>
+							<button
+								onclick={stopTimer}
+								style="background: none; border: 1px dotted rgba(255,100,100,0.5); color: rgba(255,120,120,0.9); font-family: 'Courier', monospace; padding: 0.3em 0.9em; cursor: pointer;"
+							>■ stop</button>
+						</div>
+					{:else}
+						<button
+							onclick={startTimer}
+							style="background: none; border: 1px dotted rgba(255,255,255,0.4); color: white; font-family: 'Courier', monospace; padding: 0.3em 0.9em; cursor: pointer;"
+						>▶ start</button>
+					{/if}
 				</div>
 			{/if}
 		</section>
