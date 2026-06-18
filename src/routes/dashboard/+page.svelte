@@ -70,6 +70,7 @@ Example:
 		const { data } = await supabase
 			.from('time_entries')
 			.select('*')
+			.eq('user_id', auth.session.user.id)
 			.order('entry_date', { ascending: false })
 			.order('created_at', { ascending: false });
 		if (data) entries = data;

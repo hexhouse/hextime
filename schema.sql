@@ -14,24 +14,19 @@ create table public.profiles (
   tax_id text,
   payment_method text,
   payment_details text,
+  display_name text,
   role text not null default 'contractor' check (role in ('contractor', 'admin')),
   created_at timestamptz default now()
 );
 alter table public.profiles enable row level security;
 
-create policy "users can read own profile"
+create policy "authenticated users can read all profiles"
   on public.profiles for select
-  using (auth.uid() = id);
+  using (auth.uid() is not null);
 
 create policy "users can update own profile"
   on public.profiles for update
   using (auth.uid() = id);
-
-create policy "admins can read all profiles"
-  on public.profiles for select
-  using (exists (
-    select 1 from public.profiles where id = auth.uid() and role = 'admin'
-  ));
 
 -- Auto-create a profile row when a new user signs up
 create or replace function public.handle_new_user()
@@ -68,11 +63,9 @@ create policy "users can manage own entries"
   on public.time_entries for all
   using (auth.uid() = user_id);
 
-create policy "admins can read all entries"
+create policy "authenticated users can read all entries"
   on public.time_entries for select
-  using (exists (
-    select 1 from public.profiles where id = auth.uid() and role = 'admin'
-  ));
+  using (auth.uid() is not null);
 
 
 -- QUARTERLY RATES (admin-set, read by everyone)

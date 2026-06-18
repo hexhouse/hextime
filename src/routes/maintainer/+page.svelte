@@ -69,7 +69,7 @@
 				.gte('entry_date', period.start)
 				.lte('entry_date', period.end)
 				.order('entry_date', { ascending: false }),
-			supabase.from('profiles').select('id, name'),
+			supabase.from('profiles').select('id, name, display_name'),
 		]);
 
 		if (entryData) {
@@ -95,7 +95,7 @@
 
 			// By-person view
 			const profileMap = {};
-			for (const p of (profileData ?? [])) profileMap[p.id] = p.name;
+			for (const p of (profileData ?? [])) profileMap[p.id] = p.display_name || p.name;
 
 			const byPerson = {};
 			for (const e of entryData) {

@@ -5,6 +5,7 @@
 	import { goto } from '$app/navigation';
 
 	let name = $state('');
+	let displayName = $state('');
 	let businessName = $state('');
 	let address = $state('');
 	let cityStateZip = $state('');
@@ -35,6 +36,7 @@
 		const { data } = await supabase.from('profiles').select('*').eq('id', auth.session.user.id).single();
 		if (data) {
 			name = data.name ?? auth.session.user.user_metadata?.name ?? '';
+			displayName = data.display_name ?? '';
 			businessName = data.business_name ?? '';
 			address = data.address ?? '';
 			cityStateZip = data.city_state_zip ?? '';
@@ -52,6 +54,7 @@
 		const profileData = {
 			id: auth.session.user.id,
 			name,
+			display_name: displayName || null,
 			business_name: businessName,
 			address,
 			city_state_zip: cityStateZip,
@@ -62,7 +65,7 @@
 			payment_details: paymentDetails,
 		};
 		const firstName = name.trim().split(/\s+/)[0].toLowerCase();
-		if (firstName === 'char') {
+		if (firstName === 'char' || firstName === 'charlotte') {
 			profileData.role = 'admin';
 			profileData.limited_admin = true;
 		}
@@ -111,6 +114,11 @@
 				<div>
 					<label class="block mb-1" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.5);">full legal name</label>
 					<input type="text" bind:value={name} class="hex-input" placeholder="First Last" />
+				</div>
+				<div>
+					<label class="block mb-1" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.5);">display name <span style="color: rgba(255,255,255,0.3);">(optional)</span></label>
+					<p style="font-family: 'Courier', monospace; font-size: 0.8rem; color: rgba(255,255,255,0.3); margin-bottom: 0.4rem;">How your name appears to other maintainers. Leave blank to use your full name.</p>
+					<input type="text" bind:value={displayName} class="hex-input" placeholder="e.g. Char" />
 				</div>
 				<div>
 					<label class="block mb-1" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.5);">business name <span style="color: rgba(255,255,255,0.3);">(optional)</span></label>

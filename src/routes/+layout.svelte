@@ -13,6 +13,11 @@
 			goto('/');
 		}
 	});
+
+	$effect(() => {
+		$page.url.pathname;
+		console.log("time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀     time time time time time time 🌀");
+	});
 </script>
 
 {#if auth.loading}
