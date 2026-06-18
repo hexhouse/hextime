@@ -184,7 +184,7 @@
 					<p style="margin: 0 0 0.75rem 0;">Maintainers may submit invoices for hours worked within payment periods. Invoices submitted within 3 months after any given payment period ends will be processed.</p>
 					<p style="margin: 0 0 0.75rem 0;">Hourly rates and monthly caps are reviewed quarterly. Payment periods run from the 15th to the 14th so that payments can go out before the beginning of the month, when rent and studio dues are often due. This is meant to make things easier to plan around.</p>
 					<p style="margin: 0 0 0.75rem 0;">Hex House adjusts rates and caps based on the surplus generated from memberships and events of the previous budget quarter.</p>
-					<p style="margin: 0;">Caps represent the maximum number of hours Hex can compensate each maintainer for within a month. We want everyone to feel confident that the work they do for Hex is recognized and paid: if you work hours within your cap and invoice them, you will be paid for that work.</p>
+					<p style="margin: 0;">Caps represent the maximum number of hours Hex can compensate each maintainer for within a month. We want everyone to feel confident that the work they do for Hex is recognized. If you work hours within your cap and invoice for them, you will be paid for that work.</p>
 				</div>
 			{/if}
 		</div>
