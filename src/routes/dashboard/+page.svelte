@@ -445,11 +445,11 @@ Example:
 						{#if paused}<span style="font-family: 'Courier', monospace; font-size: 0.8rem; color: rgba(255,255,255,0.3); display: block; margin-top: 0.25rem;">paused</span>{/if}
 					</div>
 					<div>
-						<input type="text" bind:value={description} class="hex-input" style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem;" placeholder="work description..." />
+						<input type="text" bind:value={description} class="hex-input" style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem; {reviewing && !description.trim() ? 'border-color: rgba(255,210,80,0.6);' : ''}" placeholder="work description..." />
 					</div>
 					<div>
 						<label class="block mb-1" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">project</label>
-						<select bind:value={project} class="hex-select">
+						<select bind:value={project} class="hex-select" style="{reviewing && !project ? 'border-color: rgba(255,210,80,0.6);' : ''}">
 							<option value="">—</option>
 							{#each projects as p}<option value={p}>{p}</option>{/each}
 						</select>
@@ -459,7 +459,8 @@ Example:
 						<div class="flex gap-3 items-center">
 							<button
 								onclick={confirmSave}
-								style="background: none; border: 1px dotted rgba(255,255,255,0.4); color: white; font-family: 'Courier', monospace; padding: 0.3em 0.9em; cursor: pointer;"
+								disabled={!description.trim()}
+								style="background: none; border: 1px dotted rgba(255,255,255,0.4); color: white; font-family: 'Courier', monospace; padding: 0.3em 0.9em; cursor: pointer; opacity: {description.trim() ? 1 : 0.3};"
 							>+ save to log</button>
 							<button
 								onclick={resetTimer}
