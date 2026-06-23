@@ -104,6 +104,23 @@
 				byPerson[name].entries.push(e);
 				byPerson[name].totalSeconds += e.duration_seconds;
 			}
+			for (const person of Object.values(byPerson)) {
+				const groups = {};
+				for (const e of person.entries) {
+					const proj = e.project || 'Uncategorized';
+					groups[proj] = (groups[proj] || 0) + e.duration_seconds;
+				}
+				let angle = -Math.PI / 2;
+				person.slices = Object.entries(groups)
+					.map(([project, seconds]) => ({ project, seconds, color: PROJECT_COLORS[project] ?? '#888888' }))
+					.sort((a, b) => b.seconds - a.seconds)
+					.map(d => {
+						const sweep = person.totalSeconds > 0 ? (d.seconds / person.totalSeconds) * 2 * Math.PI : 0;
+						const s = { ...d, angle, sweep, pct: person.totalSeconds > 0 ? ((d.seconds / person.totalSeconds) * 100).toFixed(0) : '0' };
+						angle += sweep;
+						return s;
+					});
+			}
 			maintainers = Object.values(byPerson).sort((a, b) => {
 				const fa = a.name.trim().split(/\s+/)[0].toLowerCase();
 				const fb = b.name.trim().split(/\s+/)[0].toLowerCase();
@@ -232,7 +249,28 @@
 							</div>
 						</button>
 						{#if isOpen}
-							<div class="mb-6 mt-1">
+							<div class="mb-6 mt-2">
+								<!-- per-person donut chart -->
+								<div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap;">
+									<svg viewBox="0 0 260 260" width="140" height="140" style="flex-shrink: 0;">
+										{#each m.slices as slice}
+											<path d={donutPath(slice.angle, slice.sweep)} fill={slice.color} opacity="0.85" />
+										{/each}
+										<text x={CX} y={CY - 5} text-anchor="middle" style="font-family: 'Courier', monospace; font-size: 11px; fill: rgba(255,255,255,0.35);">total</text>
+										<text x={CX} y={CY + 13} text-anchor="middle" style="font-family: 'Courier', monospace; font-size: 15px; fill: white;">{fmtDuration(m.totalSeconds)}</text>
+									</svg>
+									<div style="flex: 1; min-width: 0;">
+										{#each m.slices as slice}
+											<div style="display: flex; align-items: center; justify-content: space-between; padding: 0.2rem 0; border-bottom: 1px dotted rgba(255,255,255,0.06);">
+												<div style="display: flex; align-items: center; gap: 0.4rem; min-width: 0;">
+													<span style="width: 7px; height: 7px; border-radius: 50%; background: {slice.color}; display: inline-block; flex-shrink: 0;"></span>
+													<span style="font-family: 'Times New Roman', Georgia, serif; font-size: 0.82rem; color: rgba(255,255,255,0.75); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{slice.project}</span>
+												</div>
+												<span style="font-family: 'Courier', monospace; font-size: 0.72rem; color: rgba(255,255,255,0.35); flex-shrink: 0; margin-left: 0.5rem;">{fmtDuration(slice.seconds)}</span>
+											</div>
+										{/each}
+									</div>
+								</div>
 								{#each m.entries as entry}
 									<div class="flex items-baseline justify-between py-1.5" style="border-bottom: 1px dotted rgba(255,255,255,0.05);">
 										<div class="flex items-baseline gap-3" style="min-width: 0; flex: 1;">
