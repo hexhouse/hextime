@@ -20,7 +20,6 @@
 		});
 		submitting = false;
 		if (err) { error = err.message; return; }
-		await supabase.auth.registerPasskey().catch(() => {});
 		goto('/profile/setup');
 	}
 </script>
