@@ -731,6 +731,6 @@ Example:
 	</div>
 
 	<div class="fixed bottom-4 right-5">
-		<a href="https://docs.google.com/document/d/103PKUMAJ1aXdLwx6XYLSUxXY11OVc16D8GhGrR8aIzg/edit?usp=sharing" target="_blank" rel="noopener" style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.5); text-decoration: none;">maintainer roles ↗</a>
+		<a href="https://docs.google.com/document/d/103PKUMAJ1aXdLwx6XYLSUxXY11OVc16D8GhGrR8aIzg/edit?usp=sharing" target="_blank" rel="noopener" style="font-family: 'Courier', monospace; font-size: 0.75rem; color: rgba(255,255,255,0.5); text-decoration: none;">maintainer roles doc ↗</a>
 	</div>
 </div>
