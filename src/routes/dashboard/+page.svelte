@@ -375,7 +375,7 @@ Example:
 
 		<div class="journal mb-10" style="padding: 1rem 1.25rem 1.25rem 1.25rem;">
 
-		<section class="mb-12">
+		<section>
 			<div class="flex items-center mb-7">
 				<div style="display: inline-flex; border: 1px dotted rgba(255,255,255,0.25); font-family: 'Courier', monospace; font-size: 1rem;">
 					<button
@@ -498,8 +498,11 @@ Example:
 			{/if}
 		</section>
 
+		</div><!-- end log journal -->
+
 		<!-- Bulk import -->
-		<div class="mb-6">
+		<div class="journal mb-10" style="padding: 1rem 1.25rem 1.25rem 1.25rem;">
+		<div>
 			<button
 				onclick={() => { showImport = !showImport; importDone = null; if (!showImport) { importStage = 'paste'; stagedEntries = []; importDate = today(); } }}
 				style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.55); background: none; border: none; cursor: pointer; padding: 0;"
@@ -620,8 +623,7 @@ Example:
 				</div>
 			{/if}
 		</div>
-
-		</div><!-- end .journal -->
+		</div><!-- end import journal -->
 
 		<!-- Billing period summary -->
 		<div class="mt-20 mb-6 px-3 py-3" style="border: 1px dotted rgba(255,255,255,0.1);">
