@@ -18,6 +18,7 @@
 	let submitting = $state(false);
 	let passkeyStatus = $state('');
 	let enrollingPasskey = $state(false);
+	let showHomeScreenInstructions = $state(false);
 
 	async function enrollPasskey() {
 		enrollingPasskey = true;
@@ -191,5 +192,28 @@
 
 		</form>
 		</div>
+
+		<div style="margin-top: 3rem; border-top: 1px dotted rgba(255,255,255,0.1); padding-top: 1.5rem;">
+			<button
+				onclick={() => showHomeScreenInstructions = !showHomeScreenInstructions}
+				style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3); background: none; border: none; cursor: pointer; padding: 0;"
+			>{showHomeScreenInstructions ? '▲ hide' : '↓ add to home screen (iPhone)'}</button>
+
+			{#if showHomeScreenInstructions}
+				<ol style="margin-top: 1rem; font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.45); line-height: 1.9; padding-left: 1.25rem;">
+					<li>Open the Shortcuts app.</li>
+					<li>Tap + to create a new shortcut.</li>
+					<li>Tap Add Action.</li>
+					<li>Search for and select Open URLs.</li>
+					<li>Enter: <span style="color: rgba(255,255,255,0.65);">https://time.hexhouse.studio/dashboard</span></li>
+					<li>Tap the ⓘ (or the dropdown/arrow at the top, depending on your iOS version).</li>
+					<li>Choose Add to Home Screen.</li>
+					<li>Tap the Home Screen icon to choose your own image.</li>
+					<li>Rename it to Time.Hex, time.hex, or whatever you'd like.</li>
+				</ol>
+			{/if}
+		</div>
+
 	</div>
+
 </div>
