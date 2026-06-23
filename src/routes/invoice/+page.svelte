@@ -108,7 +108,15 @@
 	const capHours = $derived(
 		auth.session?.user?.id ? getCapForDate(auth.session.user.id, startDate) : null
 	);
-	const { comp: compEntries, over: overEntries } = $derived(splitByCap(filtered, capHours));
+
+	let donatedIds = $state(new Set());
+	$effect(() => { startDate; donatedIds = new Set(); });
+
+	const filteredMinusDonated = $derived(filtered.filter(e => !donatedIds.has(e.id)));
+	const manuallyDonated = $derived(filtered.filter(e => donatedIds.has(e.id)));
+	const splitResult = $derived(splitByCap(filteredMinusDonated, capHours));
+	const compEntries = $derived(splitResult.comp);
+	const overEntries = $derived([...splitResult.over, ...manuallyDonated]);
 
 	const rateGroups = $derived(groupByRate(compEntries));
 
@@ -146,6 +154,26 @@
 		setTimeout(() => window.print(), 100);
 	}
 </script>
+
+<style>
+	.donate-btn {
+		background: none;
+		border: none;
+		cursor: pointer;
+		font-family: 'Courier', monospace;
+		font-size: 0.72rem;
+		color: rgba(255,255,255,0);
+		padding: 0;
+		transition: color 0.15s;
+		white-space: nowrap;
+	}
+	.entry-row:hover .donate-btn {
+		color: rgba(255,255,255,0.25);
+	}
+	.donate-btn:hover {
+		color: rgba(255,210,80,0.7) !important;
+	}
+</style>
 
 <svelte:head>
 	<link rel="stylesheet" href="/assets/asciinema-player.css" />
@@ -321,14 +349,18 @@
 						{/if}
 					</div>
 					{#each g.entries as entry}
-						<div class="flex justify-between py-1.5" style="border-bottom: 1px dotted rgba(255,255,255,0.1);">
+						<div class="entry-row flex justify-between py-1.5" style="border-bottom: 1px dotted rgba(255,255,255,0.1);">
 							<div>
 								<span style="font-family: 'Times New Roman', Georgia, serif;">{entry.description}{#if entry._partial} <span style="color:rgba(255,255,255,0.3);">(partial)</span>{/if}</span>
 								<span class="ml-2" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.3);">{entry.project}</span>
 							</div>
-							<div class="flex gap-4" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.5);">
+							<div class="flex gap-4 items-baseline" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.5);">
 								<span>{fmtDate(entry.entry_date)}</span>
 								<span>{fmtDuration(entry.duration_seconds)}</span>
+								<button
+									class="donate-btn"
+									onclick={() => { const s = new Set(donatedIds); s.add(entry.id); donatedIds = s; }}
+								>donate</button>
 							</div>
 						</div>
 					{/each}
@@ -348,14 +380,20 @@
 						donated / uncompensated · {fmtDuration(overSeconds)}
 					</p>
 					{#each overEntries as entry}
-						<div class="flex justify-between py-1.5" style="border-bottom: 1px dotted rgba(255,255,255,0.07);">
+						<div class="entry-row flex justify-between py-1.5" style="border-bottom: 1px dotted rgba(255,255,255,0.07);">
 							<div>
 								<span style="font-family: 'Times New Roman', Georgia, serif; color: rgba(255,255,255,0.45);">{entry.description}{#if entry._partial} <span style="color:rgba(255,255,255,0.25);">(partial)</span>{/if}</span>
 								<span class="ml-2" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.2);">{entry.project}</span>
 							</div>
-							<div class="flex gap-4" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.3);">
+							<div class="flex gap-4 items-baseline" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.3);">
 								<span>{fmtDate(entry.entry_date)}</span>
 								<span>{fmtDuration(entry.duration_seconds)}</span>
+								{#if donatedIds.has(entry.id)}
+									<button
+										class="donate-btn"
+										onclick={() => { const s = new Set(donatedIds); s.delete(entry.id); donatedIds = s; }}
+									>undo</button>
+								{/if}
 							</div>
 						</div>
 					{/each}
