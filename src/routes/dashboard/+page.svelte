@@ -8,6 +8,7 @@
 	let running = $state(false);
 	let paused = $state(false);
 	let reviewing = $state(false);
+	let logAttempted = $state(false);
 	let startTime = $state(null);
 	let elapsed = $state(0);
 	let timerInterval = null;
@@ -119,9 +120,11 @@ Example:
 		} else {
 			duration = (parseInt(hours) || 0) * 3600 + (parseInt(minutes) || 0) * 60;
 		}
-		if (!description || duration === 0) return;
+		if (!description.trim()) { logAttempted = true; return; }
+		if (duration === 0) return;
 		await saveEntry(description, project || 'Other', duration, entryDate || today());
 		description = ''; project = ''; hours = ''; minutes = ''; decimalHours = ''; entryDate = today();
+		logAttempted = false;
 	}
 
 	async function saveEntry(desc, proj, durationSeconds, date) {
@@ -396,9 +399,10 @@ Example:
 							type="text"
 							bind:value={description}
 							class="hex-input"
-							style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem;"
+							style="font-family: 'Times New Roman', Georgia, serif; font-size: 1rem; {logAttempted && !description.trim() ? 'border-color: rgba(255,210,80,0.6);' : ''}"
 							placeholder="work description..."
 							onkeydown={(e) => e.key === 'Enter' && logManual()}
+							oninput={() => { if (logAttempted && description.trim()) logAttempted = false; }}
 						/>
 					</div>
 					<div class="flex gap-6 flex-wrap items-end">
@@ -430,7 +434,7 @@ Example:
 						</div>
 					</div>
 					<div class="flex items-center gap-4 mt-1">
-						<button class="btn-silver" onclick={logManual}>+ log entry</button>
+						<button class="btn-silver" onclick={logManual} style="opacity: {description.trim() ? 1 : 0.4};">+ log entry</button>
 						<button
 							onclick={() => { decimalMode = !decimalMode; localStorage.setItem('hextime_decimal', decimalMode ? '1' : '0'); }}
 							style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.3); background: none; border: none; cursor: pointer;"
