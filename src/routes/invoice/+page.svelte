@@ -109,14 +109,13 @@
 		auth.session?.user?.id ? getCapForDate(auth.session.user.id, startDate) : null
 	);
 
-	let donatedIds = $state(new Set());
-	$effect(() => { startDate; donatedIds = new Set(); });
+	let invoiceHoursOverride = $state(null);
+	$effect(() => { startDate; invoiceHoursOverride = null; });
 
-	const filteredMinusDonated = $derived(filtered.filter(e => !donatedIds.has(e.id)));
-	const manuallyDonated = $derived(filtered.filter(e => donatedIds.has(e.id)));
-	const splitResult = $derived(splitByCap(filteredMinusDonated, capHours));
-	const compEntries = $derived(splitResult.comp);
-	const overEntries = $derived([...splitResult.over, ...manuallyDonated]);
+	const effectiveSplitHours = $derived(
+		invoiceHoursOverride != null ? invoiceHoursOverride : capHours
+	);
+	const { comp: compEntries, over: overEntries } = $derived(splitByCap(filtered, effectiveSplitHours));
 
 	const rateGroups = $derived(groupByRate(compEntries));
 
@@ -155,25 +154,6 @@
 	}
 </script>
 
-<style>
-	.donate-btn {
-		background: none;
-		border: none;
-		cursor: pointer;
-		font-family: 'Courier', monospace;
-		font-size: 0.72rem;
-		color: rgba(255,255,255,0);
-		padding: 0;
-		transition: color 0.15s;
-		white-space: nowrap;
-	}
-	.entry-row:hover .donate-btn {
-		color: rgba(255,255,255,0.25);
-	}
-	.donate-btn:hover {
-		color: rgba(255,210,80,0.7) !important;
-	}
-</style>
 
 <svelte:head>
 	<link rel="stylesheet" href="/assets/asciinema-player.css" />
@@ -307,12 +287,35 @@
 
 		<!-- Cap info -->
 		{#if capHours != null}
-			<p style="font-family: 'Courier', monospace; font-size: 0.9rem; color: rgba(255,255,255,0.35); margin-bottom: 1rem;">
-				monthly cap: {capHours}h
+			<div style="font-family: 'Courier', monospace; font-size: 0.9rem; color: rgba(255,255,255,0.35); margin-bottom: 1rem; display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;">
+				<span>monthly cap: {capHours}h</span>
+				<span style="display: flex; align-items: baseline; gap: 0.35rem;">
+					invoicing
+					<input
+						type="number"
+						min="0"
+						max={capHours}
+						step="0.5"
+						placeholder={String(Math.min(capHours, filtered.reduce((s, e) => s + e.duration_seconds, 0) / 3600).toFixed(1))}
+						value={invoiceHoursOverride ?? ''}
+						oninput={(e) => {
+							const v = parseFloat(e.target.value);
+							invoiceHoursOverride = isNaN(v) ? null : Math.min(v, capHours);
+						}}
+						style="width: 3.5rem; font-family: 'Courier', monospace; font-size: 0.9rem; background: rgba(255,255,255,0.06); border: 1px dotted rgba(255,255,255,0.2); color: white; padding: 0.1em 0.3em; text-align: right;"
+					/>
+					h
+					{#if invoiceHoursOverride != null}
+						<button
+							onclick={() => invoiceHoursOverride = null}
+							style="background: none; border: none; cursor: pointer; font-family: 'Courier', monospace; font-size: 0.8rem; color: rgba(255,255,255,0.25); padding: 0; margin-left: 0.2rem;"
+						>reset</button>
+					{/if}
+				</span>
 				{#if overEntries.length > 0}
-					<span style="color: #f4a261;"> · {fmtDuration(overSeconds)} over cap</span>
+					<span style="color: #f4a261;">{fmtDuration(overSeconds)} donated</span>
 				{/if}
-			</p>
+			</div>
 		{/if}
 
 		<!-- Rate preview per group (compensated entries only) -->
@@ -349,18 +352,14 @@
 						{/if}
 					</div>
 					{#each g.entries as entry}
-						<div class="entry-row flex justify-between py-1.5" style="border-bottom: 1px dotted rgba(255,255,255,0.1);">
+						<div class="flex justify-between py-1.5" style="border-bottom: 1px dotted rgba(255,255,255,0.1);">
 							<div>
 								<span style="font-family: 'Times New Roman', Georgia, serif;">{entry.description}{#if entry._partial} <span style="color:rgba(255,255,255,0.3);">(partial)</span>{/if}</span>
 								<span class="ml-2" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.3);">{entry.project}</span>
 							</div>
-							<div class="flex gap-4 items-baseline" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.5);">
+							<div class="flex gap-4" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.5);">
 								<span>{fmtDate(entry.entry_date)}</span>
 								<span>{fmtDuration(entry.duration_seconds)}</span>
-								<button
-									class="donate-btn"
-									onclick={() => { const s = new Set(donatedIds); s.add(entry.id); donatedIds = s; }}
-								>donate</button>
 							</div>
 						</div>
 					{/each}
@@ -380,20 +379,14 @@
 						donated / uncompensated · {fmtDuration(overSeconds)}
 					</p>
 					{#each overEntries as entry}
-						<div class="entry-row flex justify-between py-1.5" style="border-bottom: 1px dotted rgba(255,255,255,0.07);">
+						<div class="flex justify-between py-1.5" style="border-bottom: 1px dotted rgba(255,255,255,0.07);">
 							<div>
 								<span style="font-family: 'Times New Roman', Georgia, serif; color: rgba(255,255,255,0.45);">{entry.description}{#if entry._partial} <span style="color:rgba(255,255,255,0.25);">(partial)</span>{/if}</span>
 								<span class="ml-2" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.2);">{entry.project}</span>
 							</div>
-							<div class="flex gap-4 items-baseline" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.3);">
+							<div class="flex gap-4" style="font-family: 'Courier', monospace; font-size: 1rem; color: rgba(255,255,255,0.3);">
 								<span>{fmtDate(entry.entry_date)}</span>
 								<span>{fmtDuration(entry.duration_seconds)}</span>
-								{#if donatedIds.has(entry.id)}
-									<button
-										class="donate-btn"
-										onclick={() => { const s = new Set(donatedIds); s.delete(entry.id); donatedIds = s; }}
-									>undo</button>
-								{/if}
 							</div>
 						</div>
 					{/each}
