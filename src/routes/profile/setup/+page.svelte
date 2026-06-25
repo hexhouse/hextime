@@ -197,7 +197,7 @@
 			<button
 				onclick={() => showHomeScreenInstructions = !showHomeScreenInstructions}
 				style="font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.3); background: none; border: none; cursor: pointer; padding: 0;"
-			>{showHomeScreenInstructions ? '▲ hide' : '↓ add to home screen (iPhone)'}</button>
+			>{showHomeScreenInstructions ? '▲ hide' : '↓ Add time.hexhouse.studio to home screen (iPhone)'}</button>
 
 			{#if showHomeScreenInstructions}
 				<ol style="margin-top: 1rem; font-family: 'Courier', monospace; font-size: 0.82rem; color: rgba(255,255,255,0.45); line-height: 1.9; padding-left: 1.25rem;">
