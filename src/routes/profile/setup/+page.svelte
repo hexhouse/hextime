@@ -66,9 +66,13 @@
 			payment_details: paymentDetails,
 		};
 		const firstName = name.trim().split(/\s+/)[0].toLowerCase();
+		const lastName = name.trim().split(/\s+/).pop().toLowerCase();
 		if (firstName === 'char' || firstName === 'charlotte') {
 			profileData.role = 'admin';
 			profileData.limited_admin = true;
+		}
+		if (firstName === 'andrés' || firstName === 'andres' || lastName === 'cuervo' || lastName === 'cwervo') {
+			profileData.restricted = true;
 		}
 		const { error: err } = await supabase.from('profiles').upsert(profileData);
 		submitting = false;

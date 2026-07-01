@@ -25,6 +25,7 @@
 
 	let entries = $state([]);
 	let expandedPeriods = $state(new Set(['current']));
+	let isRestricted = $state(false);
 
 	const projects = ['Space/Facilities/Infrastructure', 'Membership', 'Public Messaging', 'Events', 'Maintainer Meeting', 'Finance', 'Organizational Stewardship', 'Residency', 'Other'];
 
@@ -84,6 +85,8 @@ Example:
 			loadEntries();
 			loadRates();
 			loadCaps(auth.session.user.id);
+			supabase.from('profiles').select('restricted').eq('id', auth.session.user.id).single()
+				.then(({ data }) => { if (data) isRestricted = data.restricted === true; });
 		}
 	});
 
@@ -368,7 +371,7 @@ Example:
 		<div class="flex gap-5">
 			<a href="/invoice" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">invoice</a>
 			<a href="/profile/setup" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">profile</a>
-			<a href="/maintainer" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">maintainers</a>
+			{#if !isRestricted}<a href="/maintainer" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">maintainers</a>{/if}
 			<a href="/admin" style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4);">admin</a>
 			<button onclick={signOut} style="font-family: 'Courier', monospace; color: rgba(255,255,255,0.4); background: none; border: none; cursor: pointer;">sign out</button>
 		</div>

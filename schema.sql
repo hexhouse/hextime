@@ -16,6 +16,7 @@ create table public.profiles (
   payment_details text,
   display_name text,
   role text not null default 'contractor' check (role in ('contractor', 'admin')),
+  restricted boolean default false,
   created_at timestamptz default now()
 );
 alter table public.profiles enable row level security;
@@ -65,7 +66,12 @@ create policy "users can manage own entries"
 
 create policy "authenticated users can read all entries"
   on public.time_entries for select
-  using (auth.uid() is not null);
+  using (
+    auth.uid() = user_id
+    OR NOT EXISTS (
+      SELECT 1 FROM public.profiles WHERE id = auth.uid() AND restricted = true
+    )
+  );
 
 
 -- QUARTERLY RATES (admin-set, read by everyone)

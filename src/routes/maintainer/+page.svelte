@@ -1,5 +1,7 @@
 <script>
 	import { supabase } from '$lib/supabase.js';
+	import { auth } from '$lib/auth.svelte.js';
+	import { goto } from '$app/navigation';
 
 	const PROJECT_COLORS = {
 		'Space/Facilities/Infrastructure': '#7eb8d4',
@@ -53,6 +55,13 @@
 	let maintainers = $state([]); // for byPerson view
 	let expandedMaintainers = $state(new Set());
 	let loading = $state(false);
+
+	$effect(() => {
+		if (auth.session?.user) {
+			supabase.from('profiles').select('restricted').eq('id', auth.session.user.id).single()
+				.then(({ data }) => { if (data?.restricted) goto('/dashboard'); });
+		}
+	});
 
 	$effect(() => {
 		selectedKey;
